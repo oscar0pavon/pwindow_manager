@@ -184,6 +184,11 @@ static void maprequest(XEvent *e);
 static void monocle(Monitor *m);
 static void motionnotify(XEvent *e);
 static void movemouse(const Arg *arg);
+
+static void movetoedge(const Arg *arg);
+static void moveresize(const Arg *arg);
+static void moveresizewebcam(const Arg *arg);
+
 static Client *nexttiled(Client *c);
 static void pop(Client *c);
 static void propertynotify(XEvent *e);
@@ -233,6 +238,7 @@ static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
+static void autostart_exec(void);
 
 /* variables */
 static const char broken[] = "broken";
@@ -271,8 +277,115 @@ static Window root, wmcheckwin;
 /* configuration, allows nested code to access above variables */
 #include "config.h"
 
+void
+movetoedge(const Arg *arg) {
+
+//only floating windows can be moved/
+
+	Client *c;
+	c = selmon->sel;
+	int x, y, nx, ny;
+
+	if (!c || !arg)
+		return;
+	if (selmon->lt[selmon->sellt]->arrange && !c->isfloating)
+		return;
+	if (sscanf((char *)arg->v, "%d %d", &x, &y) != 2)
+		return;
+
+	if(x == 0)
+		nx = (selmon->mw - c->w)/2;
+	else if(x == -1)
+		nx = borderpx;
+	else if(x == 1)
+		nx = selmon->mw - (c->w + 2 * borderpx);
+	else
+		nx = c->x;
+
+	if(y == 0)
+		ny = (selmon->mh - (c->h + bh))/2;
+	else if(y == -1)
+		ny = bh + borderpx;
+	else if(y == 1)
+		ny = selmon->mh - (c->h + 2 * borderpx);
+	else 
+		ny = c->y;
+
+
+	XRaiseWindow(dpy, c->win);
+	resize(c, nx, ny, c->w, c->h, True);
+}
+
+static void
+moveresizewebcam(const Arg *arg)
+{
+	XEvent ev;
+	Monitor *m = selmon;
+
+	if(!(m->sel && arg && arg->v && m->sel->isfloating))
+		return;
+
+	resize(m->sel, m->sel->x + ((int *)arg->v)[0],
+		m->sel->y + ((int *)arg->v)[1],
+		m->sel->w + ((int *)arg->v)[2],
+		m->sel->h + ((int *)arg->v)[3],
+		True);
+
+	while(XCheckMaskEvent(dpy, EnterWindowMask, &ev));
+	Arg new_arg;
+	new_arg.v = "1 1";
+	movetoedge(&new_arg);
+}
+
+static void
+moveresize(const Arg *arg)
+{
+	XEvent ev;
+	Monitor *m = selmon;
+
+	if(!(m->sel && arg && arg->v && m->sel->isfloating))
+		return;
+
+	resize(m->sel, m->sel->x + ((int *)arg->v)[0],
+		m->sel->y + ((int *)arg->v)[1],
+		m->sel->w + ((int *)arg->v)[2],
+		m->sel->h + ((int *)arg->v)[3],
+		True);
+
+	while(XCheckMaskEvent(dpy, EnterWindowMask, &ev));
+}
+
+
 /* compile-time check if all tags fit into an unsigned int bit array. */
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
+
+/* dwm will keep pid's of processes from autostart array and kill them at quit */
+static pid_t *autostart_pids;
+static size_t autostart_len;
+
+/* execute command from autostart array */
+static void
+autostart_exec() {
+	const char *const *p;
+	size_t i = 0;
+
+	/* count entries */
+	for (p = autostart; *p; autostart_len++, p++)
+		while (*++p);
+
+	autostart_pids = malloc(autostart_len * sizeof(pid_t));
+	for (p = autostart; *p; i++, p++) {
+		if ((autostart_pids[i] = fork()) == 0) {
+			setsid();
+			execvp(*p, (char *const *)p);
+			fprintf(stderr, "dwm: execvp %s\n", *p);
+			perror(" failed");
+			_exit(EXIT_FAILURE);
+		}
+		/* skip arguments */
+		while (*++p);
+	}
+}
 
 /* function implementations */
 void
@@ -1258,6 +1371,16 @@ propertynotify(XEvent *e)
 void
 quit(const Arg *arg)
 {
+	size_t i;
+
+	/* kill child processes */
+	for (i = 0; i < autostart_len; i++) {
+		if (0 < autostart_pids[i]) {
+			kill(autostart_pids[i], SIGTERM);
+			waitpid(autostart_pids[i], NULL, 0);
+		}
+	}
+
 	running = 0;
 }
 
@@ -1540,6 +1663,7 @@ void
 setup(void)
 {
 	int i;
+	pid_t pid;
 	XSetWindowAttributes wa;
 	Atom utf8string;
 	struct sigaction sa;
@@ -1551,7 +1675,21 @@ setup(void)
 	sigaction(SIGCHLD, &sa, NULL);
 
 	/* clean up any zombies (inherited from .xinitrc etc) immediately */
-	while (waitpid(-1, NULL, WNOHANG) > 0);
+	while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
+		pid_t *p, *lim;
+
+		if (!(p = autostart_pids))
+			continue;
+		lim = &p[autostart_len];
+
+		for (; p < lim; p++) {
+			if (*p == pid) {
+				*p = -1;
+				break;
+			}
+		}
+
+	}
 
 	/* init screen */
 	screen = DefaultScreen(dpy);
@@ -2152,6 +2290,7 @@ main(int argc, char *argv[])
 	if (!(dpy = XOpenDisplay(NULL)))
 		die("dwm: cannot open display");
 	checkotherwm();
+	autostart_exec();
 	setup();
 #ifdef __OpenBSD__
 	if (pledge("stdio rpath proc exec", NULL) == -1)
