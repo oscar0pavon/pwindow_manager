@@ -31,7 +31,8 @@ static const Rule rules[] = {
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	{ "PavonEngine",     NULL,       "PavonEngine",       0,            1,           -1 },
+	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 	{ "ffplay",  NULL,       "WebCam",    0,       1,           -1 },
 	//{ "Qemu",  NULL,       "QEMU",    0,       1,           -1 }
 };
@@ -139,8 +140,10 @@ static const char *const autostart[] = {
 	"dwmstatus", NULL,
 	"set_background",NULL, 
 	"pulseaudio",NULL, 
-	"volume",NULL, 
-	"firefox", NULL,
+	"volume",NULL,
+	"st",NULL,
+	"st",NULL,
+	//"firefox", NULL,
 //	"pulse_loop",NULL, 
 	//"hsetroot", "-center", "/usr/home/bit6tream/pic/wallapper.png", NULL,
 	//"xrdb", "/usr/home/bit6tream/.config/X/Xresources", NULL,
