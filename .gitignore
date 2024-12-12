@@ -2,5 +2,5 @@
 *.diff
 *.rej
 *.orig
-dwm
+pwindow_manager
 

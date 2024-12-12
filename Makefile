@@ -6,7 +6,7 @@ include config.mk
 SRC = drw.c dwm.c util.c
 OBJ = ${SRC:.c=.o}
 
-all: dwm
+all: pwindow_manager
 
 .c.o:
 	${CC} -c ${CFLAGS} $<
@@ -14,16 +14,17 @@ all: dwm
 ${OBJ}: config.h config.mk
 
 
-dwm: ${OBJ}
+pwindow_manager: ${OBJ}
 	${CC} -o $@ ${OBJ} ${LDFLAGS}
 
 clean:
-	rm -f dwm ${OBJ} dwm-${VERSION}.tar.gz
+	rm -f pwindow_manager ${OBJ} dwm-${VERSION}.tar.gz
 
 
 install: all
-	pkill X
-	cp dwm /usr/local/bin
+	pkill pwindow_manager
+	cp pwindow_manager /usr/local/bin
+	pwindow_manager &
 
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
