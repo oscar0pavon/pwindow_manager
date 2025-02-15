@@ -34,12 +34,12 @@ static const Rule rules[] = {
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ NULL,     NULL,       "pengine",       0,            1,           -1 },
-	{ "prufus",     NULL,       "prufus",       0,            1,           -1 },
-	{ "XVkbd",     NULL,       "xvkbd - Virtual Keyboard",       0,            1,           -1 },
-	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
-	{ "ffplay",  NULL,       "WebCam",    0,       1,           -1 },
-	//{ "Qemu",  NULL,       "QEMU",    0,       1,           -1 }
+	{ NULL,				NULL,       "pengine",       0,            1,           -1 },
+	{ "prufus",   NULL,       "prufus",       0,            1,           -1 },
+	{ "XVkbd",    NULL,       "xvkbd - Virtual Keyboard",       0,            1,           -1 },
+//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	{ "ffplay",		NULL,       "WebCam",    0,       1,           -1 },
+	//{ "Qemu",		NULL,       "QEMU",    0,       1,           -1 }
 };
 
 /* layout(s) */
@@ -74,9 +74,7 @@ static const Layout layouts[] = {
 	{ MODKEY|WINKEY,                KEY,      nview,          {.ui = 1 << TAG} }, \
 	{ MODKEY|WINKEY|ControlMask,    KEY,      ntoggleview,    {.ui = 1 << TAG} }, \
 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
-	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} }, //\
-	{ ALTMOD,                       KEY,      focusnthmon,    {.i  = TAG } }, \
-	{ ALTMOD|ShiftMask,             KEY,      tagnthmon,      {.i  = TAG } },
+	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} }, 
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }

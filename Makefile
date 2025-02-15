@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = drw.c dwm.c util.c
+SRC = drw.c pwindow_manager.c util.c
 OBJ = ${SRC:.c=.o}
 
 all: pwindow_manager
@@ -27,7 +27,7 @@ install: all
 	pwindow_manager &
 
 uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/dwm\
+	rm -f ${DESTDIR}${PREFIX}/bin/pwindow_manager\
 		${DESTDIR}${MANPREFIX}/man1/dwm.1
 
 .PHONY: all clean dist install uninstall
