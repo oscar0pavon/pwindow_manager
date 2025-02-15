@@ -42,8 +42,17 @@ static const Rule rules[] = {
 /* layout(s) */
 static const float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
+static const int nviews      = 3;    /* mask of tags highlighted by default (tags 1-4) */
 static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
+
+
+static const float facts[1];    //static const float facts[]     = {     0,     0.5 }; // = mfact   // 50%
+static const int masters[1];    //static const int masters[]     = {     0,      -1 }; // = nmaster // vertical stacking (for rotated monitor)
+static const int views[1];      //static const int views[]       = {     0,      ~0 }; // = nviews  // all tags
+/* invert tags after nviews */  /* array dimentions can both be as big as needed */  // final highlighted tags
+static const int toggles[1][1]; //static const int toggles[2][2] = { {0,8}, {~0,~0} }; // 2-4+9     // all (leave as views above)
+static const int toggles[1][1] = {{~0}};
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
@@ -93,8 +102,10 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_j,      movestack,      {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_k,      movestack,      {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_j,      pushdown,       {0} },
+	{ MODKEY|ShiftMask,             XK_k,      pushup,         {0} },
+//	{ MODKEY|ShiftMask,             XK_j,      movestack,      {.i = +1 } },
+//	{ MODKEY|ShiftMask,             XK_k,      movestack,      {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_o,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
@@ -122,6 +133,7 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
+	{ MODKEY,                       XK_grave,  reset_view,     {0} },
 	{ MODKEY|ShiftMask,             XK_e,      quit,           {0} },
 };
 
@@ -133,6 +145,7 @@ static const Button buttons[] = {
 	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
   { ClkMonNum,            0,              Button1,        focusmon,       {.i = +1} },
   { ClkMonNum,            0,              Button3,        focusmon,       {.i = -1} },
+	{ ClkMonNum,            0,              Button2,        reset_view,     {0} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          {.v = terminal} },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },

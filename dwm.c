@@ -190,11 +190,17 @@ static void movetoedge(const Arg *arg);
 static void moveresize(const Arg *arg);
 static void moveresizewebcam(const Arg *arg);
 
+static Client *prevtiled(Client *c);
 static Client *nexttiled(Client *c);
+
 static void pop(Client *c);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
+
+static void pushdown(const Arg *arg);
+static void pushup(const Arg *arg);
+
 static void resize(Client *c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
@@ -242,6 +248,8 @@ static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 static void autostart_exec(void);
+
+static void reset_view(const Arg *arg);
 
 /* variables */
 static const char broken[] = "broken";
@@ -1325,6 +1333,19 @@ movemouse(const Arg *arg)
 	}
 }
 
+
+Client *
+prevtiled(Client *c)
+{
+	Client *p, *r;
+
+	for(p = selmon->clients, r = NULL; p && p != c; p = p->next)
+		if(!p->isfloating && ISVISIBLE(p))
+			r = p;
+	return r;
+}
+
+
 Client *
 nexttiled(Client *c)
 {
@@ -1407,6 +1428,54 @@ recttomon(int x, int y, int w, int h)
 		}
 	return r;
 }
+
+
+void
+pushdown(const Arg *arg)
+{
+	Client *sel = selmon->sel, *c;
+
+	if(!sel || sel->isfloating)
+		return;
+	if((c = nexttiled(sel->next))) {
+		detach(sel);
+		sel->next = c->next;
+		c->next = sel;
+	} else {
+		detach(sel);
+		attach(sel);
+	}
+	focus(sel);
+	arrange(selmon);
+}
+
+void
+pushup(const Arg *arg)
+{
+	Client *sel = selmon->sel, *c;
+
+	if(!sel || sel->isfloating)
+		return;
+	if((c = prevtiled(sel))) {
+		detach(sel);
+		sel->next = c;
+		if(selmon->clients == c)
+			selmon->clients = sel;
+	else {
+			for(c = selmon->clients; c->next != sel->next; c = c->next);
+			c->next = sel;
+		}
+	} else {
+		for(c = sel; c->next; c = c->next);
+	detach(sel);
+		sel->next = NULL;
+		c->next = sel;
+}
+	focus(sel);
+	arrange(selmon);
+}
+
+
 
 void
 resize(Client *c, int x, int y, int w, int h, int interact)
@@ -2317,6 +2386,35 @@ zoom(const Arg *arg)
 	pop(c);
 }
 
+void
+reset_view(const Arg *arg) {
+	const int mon = selmon->num;
+	Arg n = {.i = +1};	// focusmon(next monitor)
+	Arg m = {.f = 0};	// mfact -> facts[]
+	Arg i = {.i = 0};	// nmaster -> masters[]
+	Arg v = {.ui = 0};	// nviews -> views[]
+	Arg t = {.ui = 0};	// toggles[] -> toggleview()
+	unsigned int x;
+	do {
+		focusmon(&n);
+		m.f = (facts[selmon->num] ? facts[selmon->num] : mfact) +1;
+		i.i = (masters[selmon->num] ? masters[selmon->num] : nmaster) - selmon->nmaster;
+		v.ui = (views[selmon->num] == ~0 ? ~0 : ((1 << (views[selmon->num] ? (views[selmon->num] +1) : (nviews +1))) -1));
+		setmfact(&m);
+		incnmaster(&i);
+		view(&v);
+		for (x = 0; x < LENGTH(toggles[selmon->num]); x++) {
+			if ((toggles[selmon->num][x] || toggles[selmon->num][x] == 0) && toggles[selmon->num][x] != ~0) {
+				t.ui = (1 << toggles[selmon->num][x]);
+				toggleview(&t);
+			};
+		}
+	}
+	while (selmon->num != mon);
+}
+
+
+
 int
 main(int argc, char *argv[])
 {
@@ -2336,6 +2434,10 @@ main(int argc, char *argv[])
 		die("pledge");
 #endif /* __OpenBSD__ */
 	scan();
+
+//	const Arg r = {0};
+//	reset_view(&r);
+
 	run();
 	cleanup();
 	XCloseDisplay(dpy);
