@@ -32,6 +32,8 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{ NULL,     NULL,       "pengine",       0,            1,           -1 },
+	{ "prufus",     NULL,       "prufus",       0,            1,           -1 },
+	{ "XVkbd",     NULL,       "xvkbd - Virtual Keyboard",       0,            1,           -1 },
 	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 	{ "ffplay",  NULL,       "WebCam",    0,       1,           -1 },
 	//{ "Qemu",  NULL,       "QEMU",    0,       1,           -1 }
@@ -140,6 +142,7 @@ static const char *const autostart[] = {
 	"pstatus_bar", NULL,
 	"set_background",NULL, 
 	"pulseaudio",NULL, 
+	//"bluetooth_audio",NULL,
 	"volume",NULL,
 	//"monitors",NULL,
 	"pterminal",NULL,
