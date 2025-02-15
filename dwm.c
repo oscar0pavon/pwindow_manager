@@ -157,12 +157,19 @@ static void clientmessage(XEvent *e);
 static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
-static Monitor *createmon(void);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
+
+
+//Monitors
+static Monitor *createmon(void);
 static Monitor *dirtomon(int dir);
+static Monitor *numtomon(int num);
+static void focusnthmon(const Arg *arg);
+static void tagnthmon(const Arg *arg);
 static void drawbar(Monitor *m);
+
 static void drawbars(void);
 static void enternotify(XEvent *e);
 static void expose(XEvent *e);
@@ -821,6 +828,36 @@ dirtomon(int dir)
 	else
 		for (m = mons; m->next != selmon; m = m->next);
 	return m;
+}
+
+
+
+Monitor *
+numtomon(int num)
+{
+	Monitor *m = NULL;
+	int i = 0;
+
+	for(m = mons, i=0; m->next && i < num; m = m->next){
+		i++;
+	}
+	return m;
+}
+
+
+void
+focusnthmon(const Arg *arg)
+{
+	Monitor *m;
+
+	if (!mons->next)
+		return;
+
+	if ((m = numtomon(arg->i)) == selmon)
+		return;
+	unfocus(selmon->sel, 0);
+	selmon = m;
+	focus(NULL);
 }
 
 void
@@ -1900,6 +1937,16 @@ tagmon(const Arg *arg)
 		return;
 	sendmon(selmon->sel, dirtomon(arg->i));
 }
+
+
+void
+tagnthmon(const Arg *arg)
+{
+	if (!selmon->sel || !mons->next)
+		return;
+	sendmon(selmon->sel, numtomon(arg->i));
+}
+
 
 void
 tile(Monitor *m)

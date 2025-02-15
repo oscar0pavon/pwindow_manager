@@ -64,13 +64,16 @@ static const Layout layouts[] = {
 /* key definitions */
 #define MODKEY Mod4Mask
 #define WINKEY Mod1Mask
+#define ALTMOD Mod1Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ MODKEY|WINKEY,                KEY,      nview,          {.ui = 1 << TAG} }, \
 	{ MODKEY|WINKEY|ControlMask,    KEY,      ntoggleview,    {.ui = 1 << TAG} }, \
 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
-	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
+	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} }, //\
+	{ ALTMOD,                       KEY,      focusnthmon,    {.i  = TAG } }, \
+	{ ALTMOD|ShiftMask,             KEY,      tagnthmon,      {.i  = TAG } },
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
@@ -135,6 +138,10 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY,                       XK_grave,  reset_view,     {0} },
 	{ MODKEY|ShiftMask,             XK_e,      quit,           {0} },
+	{ALTMOD,												XK_j,		focusnthmon,			 {.i = 0}}, 
+	{ALTMOD,												XK_k,		focusnthmon,			 {.i = 1}}, 
+	{ALTMOD,												XK_h,		tagnthmon,			 {.i = 0}}, 
+	{ALTMOD,												XK_l,		tagnthmon,			 {.i = 1}}, 
 };
 
 /* button definitions */
