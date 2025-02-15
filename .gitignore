@@ -3,4 +3,5 @@
 *.rej
 *.orig
 pwindow_manager
+*.patch
 
