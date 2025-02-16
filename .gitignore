@@ -5,4 +5,5 @@
 pwindow_manager
 *.patch
 compile_commands.json
+.cache
 
