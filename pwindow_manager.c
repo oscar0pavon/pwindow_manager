@@ -1255,7 +1255,55 @@ recttomon(int x, int y, int w, int h)
 		}
 	return r;
 }
+#include <stdbool.h>
 
+bool game_editor_moved = false;
+Client* game_editor_window = NULL;
+Monitor* target_monitor = NULL;
+
+void move_godot_to_monitor(const Arg *arg) {
+  Client *window;
+  const char *class, *instance;
+  XClassHint ch = {NULL, NULL};
+
+  if (target_monitor != NULL) {
+    Client *target_window = NULL;
+    bool found_game_window = false;
+    for (target_window = target_monitor->clients;
+         target_window && ISVISIBLE(target_window);
+         target_window = target_window->next) {
+      XGetClassHint(dpy, target_window->win, &ch);
+      class = ch.res_class ? ch.res_class : broken;
+      instance = ch.res_name ? ch.res_name : broken;
+      if (strcmp(instance, "Godot_Editor") == 0 &&
+          strcmp(class, "Godot") == 0 &&
+          strcmp(target_window->name, "basket (DEBUG)") == 0) {
+        found_game_window = true;
+        return;
+      }
+    }
+    if (!found_game_window) {
+      target_monitor = false;
+      game_editor_moved = false;
+    }
+  }
+
+  for (window = selmon->clients; window && ISVISIBLE(window);
+       window = window->next) {
+    XGetClassHint(dpy, window->win, &ch);
+    class = ch.res_class ? ch.res_class : broken;
+    instance = ch.res_name ? ch.res_name : broken;
+    if (strcmp(instance, "Godot_Editor") == 0 && strcmp(class, "Godot") == 0 &&
+        strcmp(window->name, "basket (DEBUG)") == 0) {
+      if (game_editor_moved == false) {
+        target_monitor = dirtomon(-1);
+        send_to_monitor(window, target_monitor);
+        game_editor_window = window;
+        game_editor_moved = true;
+      }
+    }
+  }
+}
 
 void
 pushdown(const Arg *arg)
@@ -1414,9 +1462,12 @@ run(void)
 	XEvent ev;
 	/* main event loop */
 	XSync(dpy, False);
-	while (running && !XNextEvent(dpy, &ev))
-		if (handler[ev.type])
+	while (running && !XNextEvent(dpy, &ev)){
+		if (handler[ev.type]){
 			handler[ev.type](&ev); /* call handler */
+		}
+		move_godot_to_monitor(0);
+	}
 }
 
 void
@@ -2326,7 +2377,7 @@ main(int argc, char *argv[])
 
 //	const Arg r = {0};
 //	reset_view(&r);
-
+	
 	run();
 	cleanup();
 	XCloseDisplay(dpy);

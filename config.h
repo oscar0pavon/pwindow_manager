@@ -38,8 +38,11 @@ static const Rule rules[] = {
 	{ "prufus",   NULL,       "prufus",       0,            1,           -1 },
 	{ "XVkbd",    NULL,       "xvkbd - Virtual Keyboard",       0,            1,           -1 },
 //{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
-	{ "ffplay",		NULL,       "WebCam",    0,       1,           -1 },
+	//{ "ffplay",		NULL,       "WebCam",    0,       1,           -1 },
+	//{ "st-256color",		"st-256color",       "st",    0,       1,           1 },
 	//{ "Qemu",		NULL,       "QEMU",    0,       1,           -1 }
+	{ "Godot",     "Godot_Engine",       "basket (DEBUG)",       0,            1,           0 },
+	{ "basket",     "Godot_Engine",       "basket (DEBUG)",       0,            1,           0 },
 };
 
 /* layout(s) */
@@ -145,6 +148,7 @@ static const Key keys[] = {
 	{ALTMOD,												XK_l,		window_to_monitor_and_focus,			 {.i = 1}}, 
 	{ALTMOD|ShiftMask,												XK_h,		window_to_monitor,			 {.i = 0}}, 
 	{ALTMOD|ShiftMask,												XK_l,		window_to_monitor,			 {.i = 1}}, 
+	{MODKEY,             XK_r,      move_godot_to_monitor,           {0} },
 };
 
 /* button definitions */
