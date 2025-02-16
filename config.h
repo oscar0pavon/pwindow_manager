@@ -6,7 +6,7 @@
 
 #include "pwindow_manager.h"
 
-static const unsigned int borderpx  = 1;        /* border pixel of windows */
+static const unsigned int borderpx  = 3;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
@@ -139,8 +139,8 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY,                       XK_grave,  reset_view,     {0} },
 	{ MODKEY|ShiftMask,             XK_e,      quit,           {0} },
-	{ALTMOD,												XK_j,		focus_monitor ,			 {.i = 0}}, 
-	{ALTMOD,												XK_k,		focus_monitor , {.i = 1}}, 
+	{ALTMOD,												XK_j,		focus_monitor ,			 {.i = +1}}, 
+	{ALTMOD,												XK_k,		focus_monitor , {.i = -1}}, 
 	{ALTMOD,												XK_h,		window_to_monitor_and_focus,			 {.i = 0}}, 
 	{ALTMOD,												XK_l,		window_to_monitor_and_focus,			 {.i = 1}}, 
 	{ALTMOD|ShiftMask,												XK_h,		window_to_monitor,			 {.i = 0}}, 

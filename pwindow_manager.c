@@ -643,7 +643,7 @@ focus_monitor(const Arg *arg)
 	if (!mons->next)
 		return;
 
-	if ((m = numtomon(arg->i)) == selmon)
+	if ((m = dirtomon(arg->i)) == selmon)
 		return;
 	unfocus(selmon->sel, 0);
 	selmon = m;
@@ -1462,6 +1462,21 @@ sendmon(Client *c, Monitor *m)
 	arrange(NULL);
 }
 
+void send_to_monitor(Client *window, Monitor *monitor)
+{
+	if (window->mon == monitor)
+		return;
+	unfocus(window, 1);
+	detach(window);
+	detachstack(window);
+	window->mon = monitor;
+	window->tags = monitor->tagset[monitor->seltags]; /* assign tags of target monitor */
+	attach(window);
+	attachstack(window);
+	focus(NULL);
+	arrange(NULL);
+}
+
 void
 setclientstate(Client *c, long state)
 {
@@ -1739,19 +1754,37 @@ void window_to_monitor(const Arg *arg)
 
 void window_to_monitor_and_focus(const Arg *arg)
 {
-	if (!selmon->sel || !mons->next)
+	Monitor* target_monitor = numtomon(arg->i);
+	Monitor* monitor = target_monitor;
+
+	Monitor* previus_monitor = selmon;
+
+	printf("The monitor number is %i\n",arg->i);
+
+	if (!selmon->sel)
 		return;
-	sendmon(selmon->sel, numtomon(arg->i));
+
+	Client* window = selmon->sel;
 	
-	Monitor *m;
 
-	if (!mons->next)
+	if(target_monitor == selmon)
 		return;
+	
+	if (window->mon == monitor)
+		return;
+	detach(window);
+	detachstack(window);
+	window->mon = monitor;
+	window->tags = monitor->tagset[monitor->seltags]; /* assign tags of target monitor */
+	attach(window);
+	attachstack(window);
 
-	if ((m = numtomon(arg->i)) == selmon)
-		return;
-	unfocus(selmon->sel, 0);
-	selmon = m;
+	focus(window);
+
+	unfocus(selmon->sel, 0);	
+	selmon = target_monitor;
+	arrange(monitor);
+	arrange(previus_monitor);
 	focus(NULL);
 
 }
