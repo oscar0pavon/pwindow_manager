@@ -634,8 +634,9 @@ numtomon(int num)
 }
 
 
+
 void
-focusnthmon(const Arg *arg)
+focus_monitor(const Arg *arg)
 {
 	Monitor *m;
 
@@ -1728,12 +1729,31 @@ tagmon(const Arg *arg)
 }
 
 
-void
-tagnthmon(const Arg *arg)
+
+void window_to_monitor(const Arg *arg)
 {
 	if (!selmon->sel || !mons->next)
 		return;
 	sendmon(selmon->sel, numtomon(arg->i));
+}
+
+void window_to_monitor_and_focus(const Arg *arg)
+{
+	if (!selmon->sel || !mons->next)
+		return;
+	sendmon(selmon->sel, numtomon(arg->i));
+	
+	Monitor *m;
+
+	if (!mons->next)
+		return;
+
+	if ((m = numtomon(arg->i)) == selmon)
+		return;
+	unfocus(selmon->sel, 0);
+	selmon = m;
+	focus(NULL);
+
 }
 
 

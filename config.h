@@ -139,10 +139,12 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY,                       XK_grave,  reset_view,     {0} },
 	{ MODKEY|ShiftMask,             XK_e,      quit,           {0} },
-	{ALTMOD,												XK_j,		focusnthmon,			 {.i = 0}}, 
-	{ALTMOD,												XK_k,		focusnthmon,			 {.i = 1}}, 
-	{ALTMOD,												XK_h,		tagnthmon,			 {.i = 0}}, 
-	{ALTMOD,												XK_l,		tagnthmon,			 {.i = 1}}, 
+	{ALTMOD,												XK_j,		focus_monitor ,			 {.i = 0}}, 
+	{ALTMOD,												XK_k,		focus_monitor , {.i = 1}}, 
+	{ALTMOD,												XK_h,		window_to_monitor_and_focus,			 {.i = 0}}, 
+	{ALTMOD,												XK_l,		window_to_monitor_and_focus,			 {.i = 1}}, 
+	{ALTMOD|ShiftMask,												XK_h,		window_to_monitor,			 {.i = 0}}, 
+	{ALTMOD|ShiftMask,												XK_l,		window_to_monitor,			 {.i = 1}}, 
 };
 
 /* button definitions */
