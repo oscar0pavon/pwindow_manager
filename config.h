@@ -43,6 +43,7 @@ static const Rule rules[] = {
 	//{ "Qemu",		NULL,       "QEMU",    0,       1,           -1 }
 	{ "Godot",     "Godot_Engine",       "basket (DEBUG)",       0,            1,           0 },
 	{ "basket",     "Godot_Engine",       "basket (DEBUG)",       0,            1,           0 },
+	{ "speed_mostsimple",     "Godot_Engine",       "speed_mostsimple (DEBUG)",       0,            1,           -1 },
 };
 
 /* layout(s) */
@@ -179,8 +180,8 @@ static const char *const autostart[] = {
 	//"bluetooth_audio",NULL,
 	"volume",NULL,
 	//"monitors",NULL,
-	"pterminal",NULL,
-	"pterminal",NULL,
+	//"pterminal",NULL,
+	//"pterminal",NULL,
 	//"firefox", NULL,
 //	"pulse_loop",NULL, 
 	//"hsetroot", "-center", "/usr/home/bit6tream/pic/wallapper.png", NULL,
