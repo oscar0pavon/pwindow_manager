@@ -139,6 +139,8 @@ void move_godot_to_monitor(const Arg *arg);
 void send_to_monitor(Client *window, Monitor *monitor);
 void set_window_floating(Client* window, Monitor* monitor);
 void set_window_dimention(Client* window, Monitor* monitor, int height, int width);
+void full_screen_floating_window(const Arg* arg);
+void minimal_screen_floating_window(const Arg* arg);
 
 static void drawbars(void);
 static void enternotify(XEvent *e);

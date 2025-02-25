@@ -110,8 +110,8 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_j,      pushdown,       {0} },
-	{ MODKEY|ShiftMask,             XK_k,      pushup,         {0} },
+	//{ MODKEY|ShiftMask,             XK_j,      pushdown,       {0} },
+	//{ MODKEY|ShiftMask,             XK_k,      pushup,         {0} },
 //	{ MODKEY|ShiftMask,             XK_j,      movestack,      {.i = +1 } },
 //	{ MODKEY|ShiftMask,             XK_k,      movestack,      {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
@@ -145,11 +145,13 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_e,      quit,           {0} },
 	{ALTMOD,												XK_j,		focus_monitor ,			 {.i = +1}}, 
 	{ALTMOD,												XK_k,		focus_monitor , {.i = -1}}, 
-	{ALTMOD,												XK_h,		window_to_monitor_and_focus,			 {.i = 0}}, 
-	{ALTMOD,												XK_l,		window_to_monitor_and_focus,			 {.i = 1}}, 
+	{MODKEY|ShiftMask,												XK_h,		window_to_monitor_and_focus,			 {.i = 0}}, 
+	{MODKEY|ShiftMask,												XK_l,		window_to_monitor_and_focus,			 {.i = 1}}, 
 	{ALTMOD|ShiftMask,												XK_h,		window_to_monitor,			 {.i = 0}}, 
 	{ALTMOD|ShiftMask,												XK_l,		window_to_monitor,			 {.i = 1}}, 
 	{MODKEY,             XK_r,      move_godot_to_monitor,           {0} },
+	{MODKEY|ShiftMask,             XK_x,      full_screen_floating_window ,           {0} },
+	{MODKEY|ShiftMask,             XK_z,      minimal_screen_floating_window ,           {0} },
 };
 
 /* button definitions */
@@ -176,7 +178,7 @@ static const Button buttons[] = {
 static const char *const autostart[] = {
 	"pstatus_bar", NULL,
 	"set_background",NULL, 
-	"pulseaudio",NULL, 
+	//"pulseaudio",NULL, 
 	//"bluetooth_audio",NULL,
 	"volume",NULL,
 	//"monitors",NULL,

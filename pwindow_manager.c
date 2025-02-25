@@ -1317,9 +1317,11 @@ void move_godot_to_monitor(const Arg *arg) {
       if (game_editor_moved == false) {
 				window->isfloating = true;	
         target_monitor = dirtomon(-1);
-        send_to_monitor(window, target_monitor);
+        //send_to_monitor(window, target_monitor);
 				//set_window_floating(window,target_monitor);
-				set_window_dimention(window,target_monitor,1080,1920);
+				//set_window_dimention(window,target_monitor,1920,1080);
+				//set_window_floating(window,selmon);
+				//set_window_dimention(window,selmon,1280,720);
         game_editor_window = window;
         game_editor_moved = true;
       }
@@ -1825,6 +1827,14 @@ void window_to_monitor(const Arg *arg)
 	sendmon(selmon->sel, numtomon(arg->i));
 }
 
+void full_screen_floating_window(const Arg* arg){
+	set_window_dimention(selmon->sel, selmon, 1917,1077);	
+}
+
+void minimal_screen_floating_window(const Arg* arg){
+	set_window_dimention(selmon->sel, selmon, 1280,720);	
+}
+
 void window_to_monitor_and_focus(const Arg *arg)
 {
 	Monitor* target_monitor = numtomon(arg->i);
@@ -1914,7 +1924,7 @@ set_window_floating(Client* window, Monitor* monitor)
 }
 
 void
-set_window_dimention(Client* window, Monitor* monitor, int height, int width)
+set_window_dimention(Client* window, Monitor* monitor, int width, int height)
 {
 	if (window->isfullscreen) /* no support for fullscreen windows */
 		return;
