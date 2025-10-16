@@ -26,13 +26,14 @@ struct Monitor {
 };
 
 //Monitors
-static Monitor *createmon(void);
+Monitor *createmon(void);
 Monitor *dirtomon(int dir);
-static Monitor *numtomon(int num);
-static void focusnthmon(const Arg *arg);
-static void tagnthmon(const Arg *arg);
-static void drawbar(Monitor *m);
+Monitor *numtomon(int num);
+void focusnthmon(const Arg *arg);
+void tagnthmon(const Arg *arg);
+void drawbar(Monitor *m);
 
-static Monitor *mons, *selmon;
+extern Monitor *mons, *selmon;
+
 
 #endif

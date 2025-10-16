@@ -2,11 +2,18 @@
 #define _PWINDOW_MANAGER_H
 
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include "types.h"
 #include "monitors.h"
 
+#include "drw.h"
 
+
+extern Atom wmatom[WMLast], netatom[NetLast];
+extern Display *dpy;
+extern Window root, wmcheckwin;
+extern Clr **scheme;
 
 /* function declarations */
 static void applyrules(Client *c);
@@ -14,7 +21,8 @@ static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interac
 static void arrange(Monitor *m);
 static void arrangemon(Monitor *m);
 static void attach(Client *c);
-static void attachstack(Client *c);
+
+void attachstack(Client *c);
 static void buttonpress(XEvent *e);
 static void checkotherwm(void);
 static void cleanup(void);
@@ -25,7 +33,8 @@ static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
-static void detachstack(Client *c);
+
+void detachstack(Client *c);
 
 
 
@@ -40,7 +49,8 @@ void set_window_dimention(Client* window, Monitor* monitor, int height, int widt
 void full_screen_floating_window(const Arg* arg);
 void minimal_screen_floating_window(const Arg* arg);
 
-static void drawbars(void);
+void drawbars(void);
+
 static void enternotify(XEvent *e);
 static void expose(XEvent *e);
 static void focusin(XEvent *e);
@@ -50,7 +60,8 @@ static Atom getatomprop(Client *c, Atom prop);
 static int getrootptr(int *x, int *y);
 static long getstate(Window w);
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
-static void grabbuttons(Client *c, int focused);
+
+void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
 static void incnmaster(const Arg *arg);
 static void keypress(XEvent *e);
@@ -90,7 +101,10 @@ static void setfullscreen(Client *c, int fullscreen);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
-static void seturgent(Client *c, int urg);
+
+
+void seturgent(Client *c, int urg);
+
 static void showhide(Client *c);
 static void spawn(const Arg *arg);
 static void tag(const Arg *arg);

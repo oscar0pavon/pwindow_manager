@@ -72,14 +72,15 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 	[PropertyNotify] = propertynotify,
 	[UnmapNotify] = unmapnotify
 };
-static Atom wmatom[WMLast], netatom[NetLast];
 static int running = 1;
 static Cur *cursor[CurLast];
-static Clr **scheme;
-static Display *dpy;
 static Drw *drw;
 
-static Window root, wmcheckwin;
+Atom wmatom[WMLast], netatom[NetLast];
+Monitor *mons, *selmon;
+Display *dpy;
+Window root, wmcheckwin;
+Clr **scheme;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -606,36 +607,6 @@ detachstack(Client *c)
 
 
 
-
-Monitor *
-numtomon(int num)
-{
-	Monitor *m = NULL;
-	int i = 0;
-
-	for(m = mons, i=0; m->next && i < num; m = m->next){
-		i++;
-	}
-	return m;
-}
-
-
-
-void
-focus_monitor(const Arg *arg)
-{
-	Monitor *m;
-
-	if (!mons->next)
-		return;
-
-	if ((m = dirtomon(arg->i)) == selmon)
-		return;
-	unfocus(selmon->sel, 0);
-	selmon = m;
-	focus(NULL);
-}
-
 void
 drawbar(Monitor *m)
 {
@@ -692,6 +663,7 @@ drawbar(Monitor *m)
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
 
+
 void
 drawbars(void)
 {
@@ -730,30 +702,6 @@ expose(XEvent *e)
 		drawbar(m);
 }
 
-void
-focus(Client *c)
-{
-	if (!c || !ISVISIBLE(c))
-		for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext);
-	if (selmon->sel && selmon->sel != c)
-		unfocus(selmon->sel, 0);
-	if (c) {
-		if (c->mon != selmon)
-			selmon = c->mon;
-		if (c->isurgent)
-			seturgent(c, 0);
-		detachstack(c);
-		attachstack(c);
-		grabbuttons(c, 1);
-		XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
-		setfocus(c);
-	} else {
-		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
-		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
-	}
-	selmon->sel = c;
-	drawbars();
-}
 
 /* there are some broken focus acquiring clients needing extra handling */
 void

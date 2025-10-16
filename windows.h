@@ -3,10 +3,10 @@
 
 #include "types.h"
 
-static void setfocus(Client *c);
+void setfocus(Client *c);
 
-static void unfocus(Client *c, int setfocus);
+void unfocus(Client *c, int setfocus);
 
-static void focus(Client *c);
+void focus(Client *c);
 
 #endif
