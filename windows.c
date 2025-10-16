@@ -4,6 +4,24 @@
 #include "types.h"
 
 
+void
+showhide(Client *c)
+{
+	if (!c)
+		return;
+	if (ISVISIBLE(c)) {
+		/* show clients top down */
+		XMoveWindow(dpy, c->win, c->x, c->y);
+		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
+			resize(c, c->x, c->y, c->w, c->h, 0);
+		showhide(c->snext);
+	} else {
+		/* hide clients bottom up */
+		showhide(c->snext);
+		XMoveWindow(dpy, c->win, WIDTH(c) * -2, c->y);
+	}
+}
+
 void focus(Client *c) {
   if (!c || !ISVISIBLE(c))
     for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext)
@@ -26,4 +44,36 @@ void focus(Client *c) {
   }
   selmon->sel = c;
   drawbars();
+}
+
+void detach(Client *c) {
+  Client **tc;
+
+  for (tc = &c->mon->clients; *tc && *tc != c; tc = &(*tc)->next)
+    ;
+  *tc = c->next;
+}
+
+void detachstack(Client *c) {
+  Client **tc, *t;
+
+  for (tc = &c->mon->stack; *tc && *tc != c; tc = &(*tc)->snext)
+    ;
+  *tc = c->snext;
+
+  if (c == c->mon->sel) {
+    for (t = c->mon->stack; t && !ISVISIBLE(t); t = t->snext)
+      ;
+    c->mon->sel = t;
+  }
+}
+
+void attach(Client *c) {
+  c->next = c->mon->clients;
+  c->mon->clients = c;
+}
+
+void attachstack(Client *c) {
+  c->snext = c->mon->stack;
+  c->mon->stack = c;
 }

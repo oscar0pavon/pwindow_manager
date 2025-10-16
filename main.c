@@ -124,7 +124,7 @@ movetoedge(const Arg *arg) {
 	resize(c, nx, ny, c->w, c->h, True);
 }
 
-static void
+void
 moveresizewebcam(const Arg *arg)
 {
 	XEvent ev;
@@ -145,7 +145,7 @@ moveresizewebcam(const Arg *arg)
 	movetoedge(&new_arg);
 }
 
-static void
+void
 moveresize(const Arg *arg)
 {
 	XEvent ev;
@@ -172,7 +172,7 @@ static pid_t *autostart_pids;
 static size_t autostart_len;
 
 /* execute command from autostart array */
-static void
+void
 autostart_exec() {
 	const char *const *p;
 	size_t i = 0;
@@ -300,41 +300,8 @@ applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
 	return *x != c->x || *y != c->y || *w != c->w || *h != c->h;
 }
 
-void
-arrange(Monitor *m)
-{
-	if (m)
-		showhide(m->stack);
-	else for (m = mons; m; m = m->next)
-		showhide(m->stack);
-	if (m) {
-		arrangemon(m);
-		restack(m);
-	} else for (m = mons; m; m = m->next)
-		arrangemon(m);
-}
 
-void
-arrangemon(Monitor *m)
-{
-	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
-	if (m->lt[m->sellt]->arrange)
-		m->lt[m->sellt]->arrange(m);
-}
 
-void
-attach(Client *c)
-{
-	c->next = c->mon->clients;
-	c->mon->clients = c;
-}
-
-void
-attachstack(Client *c)
-{
-	c->snext = c->mon->stack;
-	c->mon->stack = c;
-}
 
 void
 buttonpress(XEvent *e)
@@ -582,28 +549,6 @@ destroynotify(XEvent *e)
 		unmanage(c, 1);
 }
 
-void
-detach(Client *c)
-{
-	Client **tc;
-
-	for (tc = &c->mon->clients; *tc && *tc != c; tc = &(*tc)->next);
-	*tc = c->next;
-}
-
-void
-detachstack(Client *c)
-{
-	Client **tc, *t;
-
-	for (tc = &c->mon->stack; *tc && *tc != c; tc = &(*tc)->snext);
-	*tc = c->snext;
-
-	if (c == c->mon->sel) {
-		for (t = c->mon->stack; t && !ISVISIBLE(t); t = t->snext);
-		c->mon->sel = t;
-	}
-}
 
 
 
@@ -1182,7 +1127,7 @@ bool game_editor_moved = false;
 Client* game_editor_window = NULL;
 Monitor* target_monitor = NULL;
 
-bool is_playing_basket(char *instance, char *class, char *name) {
+bool is_playing_basket(const char *instance, const char *class, char *name) {
 
   if (strcmp(instance, "Godot_Engine") == 0 && strcmp(class, "basket") == 0 &&
       strcmp(name, "basket (DEBUG)") == 0) {
@@ -1193,7 +1138,7 @@ bool is_playing_basket(char *instance, char *class, char *name) {
 }
 
 
-bool is_playing_race(char *instance, char *class, char *name) {
+bool is_playing_race(const char *instance, const char *class, char *name) {
 
   if (strcmp(instance, "Godot_Engine") == 0 && strcmp(class, "speed_mostsimple") == 0 &&
       strcmp(name, "speed_mostsimple (DEBUG)") == 0) {
@@ -1376,30 +1321,6 @@ resizemouse(const Arg *arg)
 	}
 }
 
-void
-restack(Monitor *m)
-{
-	Client *c;
-	XEvent ev;
-	XWindowChanges wc;
-
-	drawbar(m);
-	if (!m->sel)
-		return;
-	if (m->sel->isfloating || !m->lt[m->sellt]->arrange)
-		XRaiseWindow(dpy, m->sel->win);
-	if (m->lt[m->sellt]->arrange) {
-		wc.stack_mode = Below;
-		wc.sibling = m->barwin;
-		for (c = m->stack; c; c = c->snext)
-			if (!c->isfloating && ISVISIBLE(c)) {
-				XConfigureWindow(dpy, c->win, CWSibling|CWStackMode, &wc);
-				wc.sibling = c->win;
-			}
-	}
-	XSync(dpy, False);
-	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
-}
 
 void
 run(void)
@@ -1448,36 +1369,6 @@ scan(void)
 	}
 }
 
-void
-sendmon(Client *c, Monitor *m)
-{
-	if (c->mon == m)
-		return;
-	unfocus(c, 1);
-	detach(c);
-	detachstack(c);
-	c->mon = m;
-	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
-	attach(c);
-	attachstack(c);
-	focus(NULL);
-	arrange(NULL);
-}
-
-void send_to_monitor(Client *window, Monitor *monitor)
-{
-	if (window->mon == monitor)
-		return;
-	unfocus(window, 1);
-	detach(window);
-	detachstack(window);
-	window->mon = monitor;
-	window->tags = monitor->tagset[monitor->seltags]; /* assign tags of target monitor */
-	attach(window);
-	attachstack(window);
-	focus(NULL);
-	arrange(NULL);
-}
 
 void
 setclientstate(Client *c, long state)
@@ -1687,23 +1578,6 @@ seturgent(Client *c, int urg)
 	XFree(wmh);
 }
 
-void
-showhide(Client *c)
-{
-	if (!c)
-		return;
-	if (ISVISIBLE(c)) {
-		/* show clients top down */
-		XMoveWindow(dpy, c->win, c->x, c->y);
-		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
-			resize(c, c->x, c->y, c->w, c->h, 0);
-		showhide(c->snext);
-	} else {
-		/* hide clients bottom up */
-		showhide(c->snext);
-		XMoveWindow(dpy, c->win, WIDTH(c) * -2, c->y);
-	}
-}
 
 void
 spawn(const Arg *arg)

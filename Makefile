@@ -54,7 +54,7 @@ clean:
 
 install: all
 	pkill pwindow_manager
-	cp pwindow_manager /usr/local/bin
+	cp pwindow_manager /usr/bin
 	pwindow_manager &
 
 uninstall:

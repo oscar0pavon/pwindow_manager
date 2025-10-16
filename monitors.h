@@ -33,6 +33,8 @@ void focusnthmon(const Arg *arg);
 void tagnthmon(const Arg *arg);
 void drawbar(Monitor *m);
 
+void sendmon(Client *c, Monitor *m);
+
 extern Monitor *mons, *selmon;
 
 
