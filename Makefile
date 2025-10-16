@@ -3,7 +3,7 @@
 
 include config.mk
 
-SRC = drw.c pwindow_manager.c util.c
+SRC = drw.c main.c util.c
 OBJ = ${SRC:.c=.o}
 
 all: pwindow_manager
