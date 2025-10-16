@@ -33,7 +33,7 @@ CFLAGS   = -std=c11 -Wall -Wno-deprecated-declarations -Os ${INCS} ${DEFINES}
 LDFLAGS  = ${LIBS}
 
 
-SRC = drw.c main.c util.c
+SRC = drw.c main.c util.c monitors.c
 OBJ = ${SRC:.c=.o}
 
 all: pwindow_manager

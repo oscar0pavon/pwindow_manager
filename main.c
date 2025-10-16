@@ -45,7 +45,7 @@
 #include "util.h"
 
 #include "pwindow_manager.h"
-
+#include "windows.h"
 
 /* variables */
 static const char broken[] = "broken";
@@ -78,7 +78,7 @@ static Cur *cursor[CurLast];
 static Clr **scheme;
 static Display *dpy;
 static Drw *drw;
-static Monitor *mons, *selmon;
+
 static Window root, wmcheckwin;
 
 /* configuration, allows nested code to access above variables */
@@ -604,20 +604,6 @@ detachstack(Client *c)
 	}
 }
 
-Monitor *
-dirtomon(int dir)
-{
-	Monitor *m = NULL;
-
-	if (dir > 0) {
-		if (!(m = selmon->next))
-			m = mons;
-	} else if (selmon == mons)
-		for (m = mons; m->next; m = m->next);
-	else
-		for (m = mons; m->next != selmon; m = m->next);
-	return m;
-}
 
 
 
@@ -779,19 +765,6 @@ focusin(XEvent *e)
 		setfocus(selmon->sel);
 }
 
-void
-focusmon(const Arg *arg)
-{
-	Monitor *m;
-
-	if (!mons->next)
-		return;
-	if ((m = dirtomon(arg->i)) == selmon)
-		return;
-	unfocus(selmon->sel, 0);
-	selmon = m;
-	focus(NULL);
-}
 
 void
 focusstack(const Arg *arg)

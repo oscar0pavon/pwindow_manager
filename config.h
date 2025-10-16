@@ -4,6 +4,7 @@
 #include <X11/X.h>
 #include <X11/Xutil.h>
 
+
 #include "pwindow_manager.h"
 
 static const unsigned int borderpx  = 3;        /* border pixel of windows */
