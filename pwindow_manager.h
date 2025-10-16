@@ -50,7 +50,6 @@ void drawbars(void);
 void enternotify(XEvent *e);
 void expose(XEvent *e);
 void focusin(XEvent *e);
-void focusmon(const Arg *arg);
 void focusstack(const Arg *arg);
 Atom getatomprop(Client *c, Atom prop);
 int getrootptr(int *x, int *y);

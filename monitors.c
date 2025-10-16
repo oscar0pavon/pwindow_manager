@@ -31,8 +31,7 @@ restack(Monitor *m)
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 }
 
-void
-focusmon(const Arg *arg)
+void focusmon(const Arg *arg)
 {
 	Monitor *m;
 

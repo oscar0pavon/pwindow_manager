@@ -35,6 +35,8 @@ void drawbar(Monitor *m);
 
 void sendmon(Client *c, Monitor *m);
 
+void focusmon(const Arg *arg);
+
 extern Monitor *mons, *selmon;
 
 

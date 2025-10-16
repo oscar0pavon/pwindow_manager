@@ -20,10 +20,8 @@
  *
  * To understand everything else, start reading main().
  */
-#include <errno.h>
 #include <locale.h>
 #include <signal.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -172,8 +170,7 @@ static pid_t *autostart_pids;
 static size_t autostart_len;
 
 /* execute command from autostart array */
-void
-autostart_exec() {
+void execute_auto_start_porgrams() {
 	const char *const *p;
 	size_t i = 0;
 
@@ -347,8 +344,7 @@ buttonpress(XEvent *e)
 			buttons[i].func(click == ClkTagBar && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
 }
 
-void
-checkotherwm(void)
+void check_other_window_manager(void)
 {
 	xerrorxlib = XSetErrorHandler(xerrorstart);
 	/* this causes an error if some other window manager is running */
@@ -1322,28 +1318,8 @@ resizemouse(const Arg *arg)
 }
 
 
-void
-run(void)
-{
-	XEvent ev;
 
-	Arg arg;
-	arg.i = 0;
-
-	focusmon(&arg);
-
-	/* main event loop */
-	XSync(dpy, False);
-	while (running && !XNextEvent(dpy, &ev)){
-		if (handler[ev.type]){
-			handler[ev.type](&ev); /* call handler */
-		}
-		move_godot_to_monitor(0);
-	}
-}
-
-void
-scan(void)
+void scan_windows(void)
 {
 	unsigned int i, num;
 	Window d1, d2, *wins = NULL;
@@ -2226,15 +2202,34 @@ int main(int argc, char *argv[])
   if (!(dpy = XOpenDisplay(NULL)))
     die("dwm: cannot open display");
 
-  checkotherwm();
-  autostart_exec();
+  check_other_window_manager();
+
+	execute_auto_start_porgrams();
+
   setup();
-  scan();
+
+  scan_windows();
 
   //	const Arg r = {0};
   //	reset_view(&r);
 
-  run();
+	XEvent ev;
+
+	Arg arg;
+	arg.i = 0;
+
+	focusmon(&arg);
+
+	/* main event loop */
+	XSync(dpy, False);
+	while (running && !XNextEvent(dpy, &ev)){
+		if (handler[ev.type]){
+			handler[ev.type](&ev); /* call handler */
+		}
+		move_godot_to_monitor(0);
+	}
+
+
   cleanup();
   XCloseDisplay(dpy);
   return EXIT_SUCCESS;
