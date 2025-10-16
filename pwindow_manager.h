@@ -115,7 +115,7 @@ void unmapnotify(XEvent *e);
 void updatebarpos(Monitor *m);
 void updatebars(void);
 void updateclientlist(void);
-int updategeom(void);
+
 void updatenumlockmask(void);
 void updatesizehints(Client *c);
 void updatestatus(void);
@@ -132,5 +132,12 @@ void zoom(const Arg *arg);
 void autostart_exec(void);
 
 void reset_view(const Arg *arg);
+
+/* variables */
+extern int screen;
+extern int sw, sh;           /* X display screen geometry width, height */
+extern int bh;               /* bar height */
+extern int lrpad;            /* sum of left and right padding for text */
+
 
 #endif

@@ -13,7 +13,6 @@ X11INC = /usr/X11R6/include
 X11LIB = /usr/X11R6/lib
 
 XINERAMALIBS  = -lXinerama
-XINERAMAFLAGS = -DXINERAMA
 
 # freetype
 FREETYPELIBS = -lfontconfig -lXft
@@ -24,7 +23,7 @@ INCS = -I${X11INC} -I${FREETYPEINC}
 LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} ${FREETYPELIBS}
 
 # flags
-DEFINES = -D_XOPEN_SOURCE=700L ${XINERAMAFLAGS}
+DEFINES = -D_XOPEN_SOURCE=700L
 #CFLAGS   = -g -std=c99 -pedantic -Wall -O0 ${INCS} ${CPPFLAGS}
 CFLAGS   = -std=c11 -Wall -Wno-deprecated-declarations -Os ${INCS} ${DEFINES}
 LDFLAGS  = ${LIBS}

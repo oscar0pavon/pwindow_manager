@@ -25,7 +25,6 @@ struct Monitor {
 	const Layout *lt[2];
 };
 
-//Monitors
 Monitor *createmon(void);
 Monitor *dirtomon(int dir);
 Monitor *numtomon(int num);
@@ -36,6 +35,9 @@ void drawbar(Monitor *m);
 void sendmon(Client *c, Monitor *m);
 
 void focusmon(const Arg *arg);
+int updategeom(void);
+
+
 
 extern Monitor *mons, *selmon;
 
