@@ -15,10 +15,11 @@ ${OBJ}: config.h config.mk
 
 
 pwindow_manager: ${OBJ}
-	${CC} -o $@ ${OBJ} ${LDFLAGS}
+	${CC} -o $@ ${OBJ} ${CFLAGS} ${LDFLAGS}
 
 clean:
-	rm -f pwindow_manager ${OBJ} dwm-${VERSION}.tar.gz
+	rm -f pwindow_manager
+	rm -f *.o
 
 
 install: all
@@ -27,7 +28,6 @@ install: all
 	pwindow_manager &
 
 uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/pwindow_manager\
-		${DESTDIR}${MANPREFIX}/man1/dwm.1
+	rm -f ${DESTDIR}${PREFIX}/bin/pwindow_manager
 
 .PHONY: all clean dist install uninstall
