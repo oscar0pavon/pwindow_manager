@@ -36,9 +36,9 @@
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
-#ifdef XINERAMA
+
 #include <X11/extensions/Xinerama.h>
-#endif /* XINERAMA */
+
 #include <X11/Xft/Xft.h>
 
 #include "drw.h"
@@ -2035,7 +2035,7 @@ void
 updatestatus(void)
 {
 	if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext)))
-		strcpy(stext, "pwindow_manager-"VERSION);
+		strcpy(stext, "pwindow_manager");
 	drawbar(selmon);
 }
 
@@ -2216,7 +2216,7 @@ reset_view(const Arg *arg) {
 int main(int argc, char *argv[])
 {
   if (argc == 2 && !strcmp("-v", argv[1]))
-    die("dwm-" VERSION);
+    die("dwm");
   else if (argc != 1)
     die("usage: dwm [-v]");
 

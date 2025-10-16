@@ -1,9 +1,6 @@
-# dwm - dynamic window manager
+# pwindow_manager a modifed dwm source code
 # See LICENSE file for copyright and license details.
 
-
-# dwm version
-VERSION = 6.5
 
 # Customize below to fit your system
 
@@ -27,7 +24,7 @@ INCS = -I${X11INC} -I${FREETYPEINC}
 LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} ${FREETYPELIBS}
 
 # flags
-DEFINES = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE=700L -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
+DEFINES = -D_XOPEN_SOURCE=700L ${XINERAMAFLAGS}
 #CFLAGS   = -g -std=c99 -pedantic -Wall -O0 ${INCS} ${CPPFLAGS}
 CFLAGS   = -std=c11 -Wall -Wno-deprecated-declarations -Os ${INCS} ${DEFINES}
 LDFLAGS  = ${LIBS}
