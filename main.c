@@ -35,6 +35,7 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 
+#include <stdbool.h>
 
 #include <X11/Xft/Xft.h>
 
@@ -59,7 +60,6 @@ int bar_height;               /* bar height */
 int lrpad;            /* sum of left and right padding for text */
 
 static int running = 1;
-static Cur *cursor[CurLast];
 
 Atom wmatom[WMLast], netatom[NetLast];
 Monitor *monitors, *selected_monitor;
@@ -749,21 +749,6 @@ incnmaster(const Arg *arg)
 }
 
 
-void
-keypress(XEvent *e)
-{
-	unsigned int i;
-	KeySym keysym;
-	XKeyEvent *ev;
-
-	ev = &e->xkey;
-	keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
-	for (i = 0; i < LENGTH(keys); i++)
-		if (keysym == keys[i].keysym
-		&& CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
-		&& keys[i].func)
-			keys[i].func(&(keys[i].arg));
-}
 
 void
 killclient(const Arg *arg)
@@ -895,65 +880,6 @@ motionnotify(XEvent *e)
 	mon = m;
 }
 
-void
-movemouse(const Arg *arg)
-{
-	int x, y, ocx, ocy, nx, ny;
-	Client *c;
-	Monitor *m;
-	XEvent ev;
-	Time lasttime = 0;
-
-	if (!(c = selected_monitor->sel))
-		return;
-	if (c->isfullscreen) /* no support moving fullscreen windows by mouse */
-		return;
-	restack(selected_monitor);
-	ocx = c->x;
-	ocy = c->y;
-	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
-		None, cursor[CurMove]->cursor, CurrentTime) != GrabSuccess)
-		return;
-	if (!getrootptr(&x, &y))
-		return;
-	do {
-		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
-		switch(ev.type) {
-		case ConfigureRequest:
-		case Expose:
-		case MapRequest:
-			handler[ev.type](&ev);
-			break;
-		case MotionNotify:
-			if ((ev.xmotion.time - lasttime) <= (1000 / 60))
-				continue;
-			lasttime = ev.xmotion.time;
-
-			nx = ocx + (ev.xmotion.x - x);
-			ny = ocy + (ev.xmotion.y - y);
-			if (abs(selected_monitor->window_area_x - nx) < snap)
-				nx = selected_monitor->window_area_x;
-			else if (abs((selected_monitor->window_area_x + selected_monitor->window_area_width) - (nx + WIDTH(c))) < snap)
-				nx = selected_monitor->window_area_x + selected_monitor->window_area_width - WIDTH(c);
-			if (abs(selected_monitor->window_area_y - ny) < snap)
-				ny = selected_monitor->window_area_y;
-			else if (abs((selected_monitor->window_area_y + selected_monitor->window_area_height) - (ny + HEIGHT(c))) < snap)
-				ny = selected_monitor->window_area_y + selected_monitor->window_area_height - HEIGHT(c);
-			if (!c->isfloating && selected_monitor->lt[selected_monitor->sellt]->arrange
-			&& (abs(nx - c->x) > snap || abs(ny - c->y) > snap))
-				togglefloating(NULL);
-			if (!selected_monitor->lt[selected_monitor->sellt]->arrange || c->isfloating)
-				resize(c, nx, ny, c->w, c->h, 1);
-			break;
-		}
-	} while (ev.type != ButtonRelease);
-	XUngrabPointer(dpy, CurrentTime);
-	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selected_monitor) {
-		sendmon(c, m);
-		selected_monitor = m;
-		focus(NULL);
-	}
-}
 
 
 Client *
@@ -1050,7 +976,6 @@ recttomon(int x, int y, int w, int h)
 		}
 	return r;
 }
-#include <stdbool.h>
 
 bool game_editor_moved = false;
 Client* game_editor_window = NULL;
@@ -1191,63 +1116,6 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
 	configure(c);
 	XSync(dpy, False);
-}
-
-void
-resizemouse(const Arg *arg)
-{
-	int ocx, ocy, nw, nh;
-	Client *c;
-	Monitor *m;
-	XEvent ev;
-	Time lasttime = 0;
-
-	if (!(c = selected_monitor->sel))
-		return;
-	if (c->isfullscreen) /* no support resizing fullscreen windows by mouse */
-		return;
-	restack(selected_monitor);
-	ocx = c->x;
-	ocy = c->y;
-	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
-		None, cursor[CurResize]->cursor, CurrentTime) != GrabSuccess)
-		return;
-	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
-	do {
-		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
-		switch(ev.type) {
-		case ConfigureRequest:
-		case Expose:
-		case MapRequest:
-			handler[ev.type](&ev);
-			break;
-		case MotionNotify:
-			if ((ev.xmotion.time - lasttime) <= (1000 / 60))
-				continue;
-			lasttime = ev.xmotion.time;
-
-			nw = MAX(ev.xmotion.x - ocx - 2 * c->bw + 1, 1);
-			nh = MAX(ev.xmotion.y - ocy - 2 * c->bw + 1, 1);
-			if (c->mon->window_area_x + nw >= selected_monitor->window_area_x && c->mon->window_area_x + nw <= selected_monitor->window_area_x + selected_monitor->window_area_width
-			&& c->mon->window_area_y + nh >= selected_monitor->window_area_y && c->mon->window_area_y + nh <= selected_monitor->window_area_y + selected_monitor->window_area_height)
-			{
-				if (!c->isfloating && selected_monitor->lt[selected_monitor->sellt]->arrange
-				&& (abs(nw - c->w) > snap || abs(nh - c->h) > snap))
-					togglefloating(NULL);
-			}
-			if (!selected_monitor->lt[selected_monitor->sellt]->arrange || c->isfloating)
-				resize(c, c->x, c->y, nw, nh, 1);
-			break;
-		}
-	} while (ev.type != ButtonRelease);
-	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
-	XUngrabPointer(dpy, CurrentTime);
-	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
-	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selected_monitor) {
-		sendmon(c, m);
-		selected_monitor = m;
-		focus(NULL);
-	}
 }
 
 

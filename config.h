@@ -41,10 +41,6 @@ static const Rule rules[] = {
 	{ "prufus",   NULL,       "prufus",       0,            1,           -1 },
 	{ "Select File - prufus",   NULL,       "Select File - prufus",       0,            1,           -1 },
 	{ "XVkbd",    NULL,       "xvkbd - Virtual Keyboard",       0,            1,           -1 },
-//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
-	//{ "ffplay",		NULL,       "WebCam",    0,       1,           -1 },
-	//{ "st-256color",		"st-256color",       "st",    0,       1,           1 },
-	//{ "Qemu",		NULL,       "QEMU",    0,       1,           -1 }
 	{ "Godot",     "Godot_Engine",       "basket (DEBUG)",       0,            1,           0 },
 	{ "basket",     "Godot_Engine",       "basket (DEBUG)",       0,            1,           0 },
 	{ "speed_mostsimple",     "Godot_Engine",       "speed_mostsimple (DEBUG)",       0,            1,           -1 },
@@ -180,21 +176,6 @@ static const Button buttons[] = {
 };
 static const char *const autostart[] = {
 	"pstatus_bar", NULL,
-	// "set_background",NULL, 
-	//"pulseaudio",NULL, 
-	//"bluetooth_audio",NULL,
-	// "volume",NULL,
-	//"monitors",NULL,
-	//"pterminal",NULL,
-	//"pterminal",NULL,
-	//"firefox", NULL,
-//	"pulse_loop",NULL, 
-	//"hsetroot", "-center", "/usr/home/bit6tream/pic/wallapper.png", NULL,
-	//"xrdb", "/usr/home/bit6tream/.config/X/Xresources", NULL,
-	//"sh", "-c", "while :; do dwmstatus.sh -; sleep 60; done", NULL,
-	//"sh", "-c", "while :; do /root/pulse.sh -; sleep 5; done", NULL,
-	//"dunst", NULL,
-	//"picom", NULL,
 	NULL
 };
 

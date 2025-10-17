@@ -2,7 +2,11 @@
 #define INPUT_H
 
 #include <X11/Xlib.h>
+#include "types.h"
+#include "drw.h"
 
 extern void (*handler[LASTEvent]) (XEvent *);
+
+extern Cur *cursor[CurLast];
 
 #endif

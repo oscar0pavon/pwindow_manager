@@ -12,15 +12,13 @@ PREFIX = /usr/
 X11INC = /usr/X11R6/include
 X11LIB = /usr/X11R6/lib
 
-XINERAMALIBS  = -lXinerama
-
 # freetype
 FREETYPELIBS = -lfontconfig -lXft
 FREETYPEINC = /usr/include/freetype2
 
 # includes and libs
 INCS = -I${X11INC} -I${FREETYPEINC}
-LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} ${FREETYPELIBS}
+LIBS = -L${X11LIB} -lX11 -lXinerama ${FREETYPELIBS}
 
 # flags
 DEFINES = -D_XOPEN_SOURCE=700L
