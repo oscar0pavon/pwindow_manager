@@ -368,18 +368,15 @@ void setmfact(const Arg *arg) {
   arrange(selected_monitor);
 }
 
-void setup(void) {
-  int i;
-  pid_t pid;
-  XSetWindowAttributes wa;
-  Atom utf8string;
-  struct sigaction sa;
+void setup_autostart(){
 
+  pid_t pid;
+  struct sigaction signal_action;
   /* do not transform children into zombies when they terminate */
-  sigemptyset(&sa.sa_mask);
-  sa.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
-  sa.sa_handler = SIG_IGN;
-  sigaction(SIGCHLD, &sa, NULL);
+  sigemptyset(&signal_action.sa_mask);
+  signal_action.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
+  signal_action.sa_handler = SIG_IGN;
+  sigaction(SIGCHLD, &signal_action, NULL);
 
   /* clean up any zombies (inherited from .xinitrc etc) immediately */
   while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
@@ -397,17 +394,33 @@ void setup(void) {
     }
   }
 
+}
+
+void setup(void) {
+
+  XSetWindowAttributes window_attributes;
+  Atom utf8string;
+  int i;
+
+  setup_autostart();
+
   /* init screen */
   screen = DefaultScreen(display);
   display_width = DisplayWidth(display, screen);
   display_height = DisplayHeight(display, screen);
   root = RootWindow(display, screen);
   drw = drw_create(display, screen, root, display_width, display_height);
+
+
+  //setting fonts
   if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
     die("no fonts could be loaded.");
   lrpad = drw->fonts->h;
   bar_height = drw->fonts->h + 2;
+
+  //this configure all screen for using it
   updategeom();
+
   /* init atoms */
   utf8string = XInternAtom(display, "UTF8_STRING", False);
   wmatom[WMProtocols] = XInternAtom(display, "WM_PROTOCOLS", False);
@@ -425,17 +438,23 @@ void setup(void) {
   netatom[NetWMWindowTypeDialog] =
       XInternAtom(display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
   netatom[NetClientList] = XInternAtom(display, "_NET_CLIENT_LIST", False);
+
   /* init cursors */
   cursor[CurNormal] = drw_cur_create(drw, XC_left_ptr);
   cursor[CurResize] = drw_cur_create(drw, XC_sizing);
   cursor[CurMove] = drw_cur_create(drw, XC_fleur);
+
   /* init appearance */
   color_scheme = ecalloc(LENGTH(colors), sizeof(Color *));
   for (i = 0; i < LENGTH(colors); i++)
     color_scheme[i] = drw_scm_create(drw, colors[i], 3);
+
+
   /* init bars */
   create_bars();
   updatestatus();
+
+
   /* supporting window for NetWMCheck */
   wmcheckwin = XCreateSimpleWindow(display, root, 0, 0, 1, 1, 0, 0, 0);
   XChangeProperty(display, wmcheckwin, netatom[NetWMCheck], XA_WINDOW, 32,
@@ -444,17 +463,20 @@ void setup(void) {
                   PropModeReplace, (unsigned char *)"pwindow_manager", 16);
   XChangeProperty(display, root, netatom[NetWMCheck], XA_WINDOW, 32,
                   PropModeReplace, (unsigned char *)&wmcheckwin, 1);
+
   /* EWMH support per view */
   XChangeProperty(display, root, netatom[NetSupported], XA_ATOM, 32,
                   PropModeReplace, (unsigned char *)netatom, NetLast);
   XDeleteProperty(display, root, netatom[NetClientList]);
+
+
   /* select events */
-  wa.cursor = cursor[CurNormal]->cursor;
-  wa.event_mask = SubstructureRedirectMask | SubstructureNotifyMask |
+  window_attributes.cursor = cursor[CurNormal]->cursor;
+  window_attributes.event_mask = SubstructureRedirectMask | SubstructureNotifyMask |
                   ButtonPressMask | PointerMotionMask | EnterWindowMask |
                   LeaveWindowMask | StructureNotifyMask | PropertyChangeMask;
-  XChangeWindowAttributes(display, root, CWEventMask | CWCursor, &wa);
-  XSelectInput(display, root, wa.event_mask);
+  XChangeWindowAttributes(display, root, CWEventMask | CWCursor, &window_attributes);
+  XSelectInput(display, root, window_attributes.event_mask);
   grabkeys();
   focus(NULL);
 }
