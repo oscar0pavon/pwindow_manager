@@ -35,12 +35,12 @@ void restack(Monitor *m) {
 void focusmon(const Arg *arg) {
   Monitor *m;
 
-  if (!mons->next)
+  if (!monitors->next)
     return;
-  if ((m = dirtomon(arg->i)) == selmon)
+  if ((m = dirtomon(arg->i)) == selected_monitor)
     return;
-  unfocus(selmon->sel, 0);
-  selmon = m;
+  unfocus(selected_monitor->sel, 0);
+  selected_monitor = m;
   focus(NULL);
 }
 
@@ -48,13 +48,13 @@ Monitor *dirtomon(int dir) {
   Monitor *m = NULL;
 
   if (dir > 0) {
-    if (!(m = selmon->next))
-      m = mons;
-  } else if (selmon == mons)
-    for (m = mons; m->next; m = m->next)
+    if (!(m = selected_monitor->next))
+      m = monitors;
+  } else if (selected_monitor == monitors)
+    for (m = monitors; m->next; m = m->next)
       ;
   else
-    for (m = mons; m->next != selmon; m = m->next)
+    for (m = monitors; m->next != selected_monitor; m = m->next)
       ;
   return m;
 }
@@ -63,7 +63,7 @@ Monitor *numtomon(int num) {
   Monitor *m = NULL;
   int i = 0;
 
-  for (m = mons, i = 0; m->next && i < num; m = m->next) {
+  for (m = monitors, i = 0; m->next && i < num; m = m->next) {
     i++;
   }
   return m;
@@ -72,13 +72,13 @@ Monitor *numtomon(int num) {
 void focus_monitor(const Arg *arg) {
   Monitor *m;
 
-  if (!mons->next)
+  if (!monitors->next)
     return;
 
-  if ((m = dirtomon(arg->i)) == selmon)
+  if ((m = dirtomon(arg->i)) == selected_monitor)
     return;
-  unfocus(selmon->sel, 0);
-  selmon = m;
+  unfocus(selected_monitor->sel, 0);
+  selected_monitor = m;
   focus(NULL);
 }
 
@@ -92,13 +92,13 @@ void arrange(Monitor *m) {
   if (m)
     showhide(m->stack);
   else
-    for (m = mons; m; m = m->next)
+    for (m = monitors; m; m = m->next)
       showhide(m->stack);
   if (m) {
     arrangemon(m);
     restack(m);
   } else
-    for (m = mons; m; m = m->next)
+    for (m = monitors; m; m = m->next)
       arrangemon(m);
 }
 
@@ -150,7 +150,7 @@ int updategeom(void) {
     XineramaScreenInfo *info = XineramaQueryScreens(dpy, &nn);
     XineramaScreenInfo *unique = NULL;
 
-    for (n = 0, m = mons; m; m = m->next, n++)
+    for (n = 0, m = monitors; m; m = m->next, n++)
       ;
     /* only consider unique geometries as separate screens */
     unique = ecalloc(nn, sizeof(XineramaScreenInfo));
@@ -162,14 +162,14 @@ int updategeom(void) {
 
     /* new monitors if nn > n */
     for (i = n; i < nn; i++) {
-      for (m = mons; m && m->next; m = m->next)
+      for (m = monitors; m && m->next; m = m->next)
         ;
       if (m)
         m->next = createmon();
       else
-        mons = createmon();
+        monitors = createmon();
     }
-    for (i = 0, m = mons; i < nn && m; m = m->next, i++)
+    for (i = 0, m = monitors; i < nn && m; m = m->next, i++)
       if (i >= n || unique[i].x_org != m->mx || unique[i].y_org != m->my ||
           unique[i].width != m->mw || unique[i].height != m->mh) {
         dirty = 1;
@@ -184,36 +184,36 @@ int updategeom(void) {
       }
     /* removed monitors if n > nn */
     for (i = nn; i < n; i++) {
-      for (m = mons; m && m->next; m = m->next)
+      for (m = monitors; m && m->next; m = m->next)
         ;
       while ((c = m->clients)) {
         dirty = 1;
         m->clients = c->next;
         detachstack(c);
-        c->mon = mons;
+        c->mon = monitors;
         attach(c);
         attachstack(c);
       }
-      if (m == selmon)
-        selmon = mons;
+      if (m == selected_monitor)
+        selected_monitor = monitors;
       cleanupmon(m);
     }
     free(unique);
   } else
 
   { /* default monitor setup */
-    if (!mons)
-      mons = createmon();
-    if (mons->mw != sw || mons->mh != sh) {
+    if (!monitors)
+      monitors = createmon();
+    if (monitors->mw != display_width || monitors->mh != display_height) {
       dirty = 1;
-      mons->mw = mons->ww = sw;
-      mons->mh = mons->wh = sh;
-      updatebarpos(mons);
+      monitors->mw = monitors->ww = display_width;
+      monitors->mh = monitors->wh = display_height;
+      updatebarpos(monitors);
     }
   }
   if (dirty) {
-    selmon = mons;
-    selmon = wintomon(root);
+    selected_monitor = monitors;
+    selected_monitor = wintomon(root);
   }
   return dirty;
 }

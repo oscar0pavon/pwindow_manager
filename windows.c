@@ -24,13 +24,13 @@ showhide(Client *c)
 
 void focus(Client *c) {
   if (!c || !ISVISIBLE(c))
-    for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext)
+    for (c = selected_monitor->stack; c && !ISVISIBLE(c); c = c->snext)
       ;
-  if (selmon->sel && selmon->sel != c)
-    unfocus(selmon->sel, 0);
+  if (selected_monitor->sel && selected_monitor->sel != c)
+    unfocus(selected_monitor->sel, 0);
   if (c) {
-    if (c->mon != selmon)
-      selmon = c->mon;
+    if (c->mon != selected_monitor)
+      selected_monitor = c->mon;
     if (c->isurgent)
       seturgent(c, 0);
     detachstack(c);
@@ -42,7 +42,7 @@ void focus(Client *c) {
     XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
     XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
   }
-  selmon->sel = c;
+  selected_monitor->sel = c;
   drawbars();
 }
 

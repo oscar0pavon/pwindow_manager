@@ -179,11 +179,10 @@ static const Button buttons[] = {
 };
 static const char *const autostart[] = {
 	"pstatus_bar", NULL,
-	"set_background",NULL, 
-	"setup_screens",NULL, 
+	// "set_background",NULL, 
 	//"pulseaudio",NULL, 
 	//"bluetooth_audio",NULL,
-	"volume",NULL,
+	// "volume",NULL,
 	//"monitors",NULL,
 	//"pterminal",NULL,
 	//"pterminal",NULL,

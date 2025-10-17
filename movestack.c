@@ -4,14 +4,14 @@ movestack(const Arg *arg) {
 
 	if(arg->i > 0) {
 		/* find the client after selmon->sel */
-		for(c = selmon->sel->next; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
+		for(c = selected_monitor->sel->next; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
 		if(!c)
-			for(c = selmon->clients; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
+			for(c = selected_monitor->clients; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
 
 	}
 	else {
 		/* find the client before selmon->sel */
-		for(i = selmon->clients; i != selmon->sel; i = i->next)
+		for(i = selected_monitor->clients; i != selected_monitor->sel; i = i->next)
 			if(ISVISIBLE(i) && !i->isfloating)
 				c = i;
 		if(!c)
@@ -20,29 +20,29 @@ movestack(const Arg *arg) {
 					c = i;
 	}
 	/* find the client before selmon->sel and c */
-	for(i = selmon->clients; i && (!p || !pc); i = i->next) {
-		if(i->next == selmon->sel)
+	for(i = selected_monitor->clients; i && (!p || !pc); i = i->next) {
+		if(i->next == selected_monitor->sel)
 			p = i;
 		if(i->next == c)
 			pc = i;
 	}
 
 	/* swap c and selmon->sel selmon->clients in the selmon->clients list */
-	if(c && c != selmon->sel) {
-		Client *temp = selmon->sel->next==c?selmon->sel:selmon->sel->next;
-		selmon->sel->next = c->next==selmon->sel?c:c->next;
+	if(c && c != selected_monitor->sel) {
+		Client *temp = selected_monitor->sel->next==c?selected_monitor->sel:selected_monitor->sel->next;
+		selected_monitor->sel->next = c->next==selected_monitor->sel?c:c->next;
 		c->next = temp;
 
 		if(p && p != c)
 			p->next = c;
-		if(pc && pc != selmon->sel)
-			pc->next = selmon->sel;
+		if(pc && pc != selected_monitor->sel)
+			pc->next = selected_monitor->sel;
 
-		if(selmon->sel == selmon->clients)
-			selmon->clients = c;
-		else if(c == selmon->clients)
-			selmon->clients = selmon->sel;
+		if(selected_monitor->sel == selected_monitor->clients)
+			selected_monitor->clients = c;
+		else if(c == selected_monitor->clients)
+			selected_monitor->clients = selected_monitor->sel;
 
-		arrange(selmon);
+		arrange(selected_monitor);
 	}
 }

@@ -39,7 +39,7 @@ int updategeom(void);
 
 
 
-extern Monitor *mons, *selmon;
+extern Monitor *monitors, *selected_monitor;
 
 
 #endif
