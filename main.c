@@ -318,8 +318,8 @@ void cleanupmon(Monitor *mon) {
       ;
     m->next = mon->next;
   }
-  XUnmapWindow(display, mon->barwin);
-  XDestroyWindow(display, mon->barwin);
+  XUnmapWindow(display, mon->bar_window);
+  XDestroyWindow(display, mon->bar_window);
   free(mon);
 }
 
@@ -643,7 +643,7 @@ void setup(void) {
   for (i = 0; i < LENGTH(colors); i++)
     color_scheme[i] = drw_scm_create(drw, colors[i], 3);
   /* init bars */
-  updatebars();
+  update_bars();
   updatestatus();
   /* supporting window for NetWMCheck */
   wmcheckwin = XCreateSimpleWindow(display, root, 0, 0, 1, 1, 0, 0, 0);

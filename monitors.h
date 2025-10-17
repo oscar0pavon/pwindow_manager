@@ -23,7 +23,7 @@ struct Monitor {
 	Client *selected_client;
 	Client *stack;
 	Monitor *next;
-	Window barwin;
+	Window bar_window;
 	const Layout *lt[2];
 };
 

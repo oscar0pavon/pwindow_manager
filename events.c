@@ -55,13 +55,13 @@ void configurenotify(XEvent *e) {
     display_height = ev->height;
     if (updategeom() || dirty) {
       drw_resize(drw, display_width, bar_height);
-      updatebars();
+      update_bars();
       for (m = monitors; m; m = m->next) {
         for (c = m->clients; c; c = c->next)
           if (c->isfullscreen)
             resizeclient(c, m->screen_x, m->screen_y, m->screen_width,
                          m->screen_height);
-        XMoveResizeWindow(display, m->barwin, m->window_area_x, m->bar_geometry,
+        XMoveResizeWindow(display, m->bar_window, m->window_area_x, m->bar_geometry,
                           m->window_area_width, bar_height);
       }
       focus(NULL);

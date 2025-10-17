@@ -21,7 +21,7 @@ void restack(Monitor *m) {
     XRaiseWindow(display, m->selected_client->win);
   if (m->lt[m->sellt]->arrange) {
     wc.stack_mode = Below;
-    wc.sibling = m->barwin;
+    wc.sibling = m->bar_window;
     for (c = m->stack; c; c = c->snext)
       if (!c->isfloating && ISVISIBLE(c)) {
         XConfigureWindow(display, c->win, CWSibling | CWStackMode, &wc);
@@ -217,7 +217,7 @@ Monitor *wintomon(Window w)
 	if (w == root && getrootptr(&x, &y))
 		return recttomon(x, y, 1, 1);
 	for (m = monitors; m; m = m->next)
-		if (w == m->barwin)
+		if (w == m->bar_window)
 			return m;
 	if ((c = get_client_from_window(w)))
 		return c->mon;

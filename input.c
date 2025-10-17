@@ -41,7 +41,7 @@ void mouse_button_press(XEvent *event) {
     selected_monitor = monitor;
     focus(NULL);
   }
-  if (buttons_pressed_event->window == selected_monitor->barwin) {
+  if (buttons_pressed_event->window == selected_monitor->bar_window) {
     i = x = 0;
     do
       x += TEXTW(tags[i]);

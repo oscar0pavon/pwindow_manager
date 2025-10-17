@@ -107,7 +107,7 @@ void nview(const Arg *arg);
 void unmanage(Client *c, int destroyed);
 void unmapnotify(XEvent *e);
 void updatebarpos(Monitor *m);
-void updatebars(void);
+void update_bars(void);
 void updateclientlist(void);
 
 void updatenumlockmask(void);

@@ -13,7 +13,7 @@ void togglebar(const Arg *arg) {
 
   updatebarpos(selected_monitor);
 
-  XMoveResizeWindow(display, selected_monitor->barwin,
+  XMoveResizeWindow(display, selected_monitor->bar_window,
                     selected_monitor->window_area_x,
                     selected_monitor->bar_geometry,
                     selected_monitor->window_area_width, bar_height);
@@ -101,12 +101,8 @@ void draw_bar(Monitor *monitor) {
       draw_rectangle(drw, x, 0, width, bar_height, 1, 1);
     }
   }
-  drw_map(drw, monitor->barwin, 0, 0, monitor->window_area_width, bar_height);
+  drw_map(drw, monitor->bar_window, 0, 0, monitor->window_area_width, bar_height);
     
-  draw_rectangle(drw,50,50,
-        monitor->screen_width, monitor->screen_height, 1 , 0);
-
-  drw_map(drw, monitor->barwin, 0, 0, monitor->window_area_width, bar_height);
 }
 
 void drawbars(void) {
@@ -115,23 +111,27 @@ void drawbars(void) {
   for (m = monitors; m; m = m->next)
     draw_bar(m);
 }
-void updatebars(void) {
-  Monitor *m;
+
+void update_bars(void) {
+  Monitor *monitor;
   XSetWindowAttributes wa = {.override_redirect = True,
                              .background_pixmap = ParentRelative,
                              .event_mask = ButtonPressMask | ExposureMask};
   XClassHint ch = {"pwindow_manager", "pwindow_manager"};
-  for (m = monitors; m; m = m->next) {
-    if (m->barwin)
+  for (monitor = monitors; monitor; monitor = monitor->next) {
+    if (monitor->bar_window)
       continue;
-    m->barwin = XCreateWindow(
-        display, root, m->window_area_x, m->bar_geometry, m->window_area_width,
-        bar_height, 0, DefaultDepth(display, screen), CopyFromParent,
-        DefaultVisual(display, screen),
-        CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
-    XDefineCursor(display, m->barwin, cursor[CurNormal]->cursor);
-    XMapRaised(display, m->barwin);
-    XSetClassHint(display, m->barwin, &ch);
+
+    monitor->bar_window =
+        XCreateWindow(display, root, monitor->window_area_x,
+                      monitor->bar_geometry, monitor->window_area_width,
+                      bar_height, 0, DefaultDepth(display, screen),
+                      CopyFromParent, DefaultVisual(display, screen),
+                      CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+
+    XDefineCursor(display, monitor->bar_window, cursor[CurNormal]->cursor);
+    XMapRaised(display, monitor->bar_window);
+    XSetClassHint(display, monitor->bar_window, &ch);
   }
 }
 
