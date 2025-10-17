@@ -3,23 +3,25 @@
 #include "pwindow_manager.h"
 #include "types.h"
 
+#include <X11/Xatom.h>
 
-void
-showhide(Client *c)
-{
-	if (!c)
-		return;
-	if (ISVISIBLE(c)) {
-		/* show clients top down */
-		XMoveWindow(dpy, c->win, c->x, c->y);
-		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)
-			resize(c, c->x, c->y, c->w, c->h, 0);
-		showhide(c->snext);
-	} else {
-		/* hide clients bottom up */
-		showhide(c->snext);
-		XMoveWindow(dpy, c->win, WIDTH(c) * -2, c->y);
-	}
+const char broken[] = "broken";
+
+void showhide(Client *c) {
+  if (!c)
+    return;
+  if (ISVISIBLE(c)) {
+    /* show clients top down */
+    XMoveWindow(dpy, c->win, c->x, c->y);
+    if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) &&
+        !c->isfullscreen)
+      resize(c, c->x, c->y, c->w, c->h, 0);
+    showhide(c->snext);
+  } else {
+    /* hide clients bottom up */
+    showhide(c->snext);
+    XMoveWindow(dpy, c->win, WIDTH(c) * -2, c->y);
+  }
 }
 
 void focus(Client *c) {
@@ -76,4 +78,49 @@ void attach(Client *c) {
 void attachstack(Client *c) {
   c->snext = c->mon->stack;
   c->mon->stack = c;
+}
+
+void setfocus(Client *c) {
+  if (!c->neverfocus) {
+    XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
+    XChangeProperty(dpy, root, netatom[NetActiveWindow], XA_WINDOW, 32,
+                    PropModeReplace, (unsigned char *)&(c->win), 1);
+  }
+  sendevent(c, wmatom[WMTakeFocus]);
+}
+
+void setfullscreen(Client *c, int fullscreen) {
+  if (fullscreen && !c->isfullscreen) {
+    XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
+                    PropModeReplace, (unsigned char *)&netatom[NetWMFullscreen],
+                    1);
+    c->isfullscreen = 1;
+    c->oldstate = c->isfloating;
+    c->oldbw = c->bw;
+    c->bw = 0;
+    c->isfloating = 1;
+    resizeclient(c, c->mon->screen_x, c->mon->screen_y, c->mon->screen_width,
+                 c->mon->screen_height);
+    XRaiseWindow(dpy, c->win);
+  } else if (!fullscreen && c->isfullscreen) {
+    XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
+                    PropModeReplace, (unsigned char *)0, 0);
+    c->isfullscreen = 0;
+    c->isfloating = c->oldstate;
+    c->bw = c->oldbw;
+    c->x = c->oldx;
+    c->y = c->oldy;
+    c->w = c->oldw;
+    c->h = c->oldh;
+    resizeclient(c, c->x, c->y, c->w, c->h);
+    arrange(c->mon);
+  }
+}
+
+void updatetitle(Client *c)
+{
+	if (!gettextprop(c->win, netatom[NetWMName], c->name, sizeof c->name))
+		gettextprop(c->win, XA_WM_NAME, c->name, sizeof c->name);
+	if (c->name[0] == '\0') /* hack to mark broken clients */
+		strcpy(c->name, broken);
 }

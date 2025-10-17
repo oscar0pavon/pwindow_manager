@@ -206,3 +206,21 @@ int updategeom(void) {
   }
   return dirty;
 }
+
+Monitor *wintomon(Window w)
+{
+	int x, y;
+	Client *c;
+	Monitor *m;
+
+	if (w == root && getrootptr(&x, &y))
+		return recttomon(x, y, 1, 1);
+	for (m = monitors; m; m = m->next)
+		if (w == m->barwin)
+			return m;
+	if ((c = wintoclient(w)))
+		return c->mon;
+	return selected_monitor;
+}
+
+

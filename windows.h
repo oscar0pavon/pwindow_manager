@@ -19,4 +19,6 @@ void attachstack(Client *c);
 
 void showhide(Client *c);
 
+extern const char broken[];
+
 #endif
