@@ -13,11 +13,16 @@
 
 #include <pthread.h>
 #include <unistd.h>
+#include <stdbool.h>
+
 
 typedef struct HigthlightMonitor{
   Window window[4];
   int size;
 }HigthlightMonitor;
+
+HigthlightMonitor hightlight;
+bool is_highligthing = false;
 
 void fill_higtlight_window(Window window, int width, int height) {
 
@@ -27,6 +32,14 @@ void fill_higtlight_window(Window window, int width, int height) {
 }
 
 void *show_higthligth_window(void *in_monitor) {
+  if (is_highligthing) {
+    for (int i = 0; i < 4; i++) { // we have four corners
+
+      XDestroyWindow(display, hightlight.window[i]);
+    }
+    is_highligthing = false;
+  }
+
   Monitor *monitor = (Monitor *)in_monitor;
 
   XSetWindowAttributes wa = {.override_redirect = True,
@@ -36,7 +49,6 @@ void *show_higthligth_window(void *in_monitor) {
   XClassHint class_hint = {"pwindow_manager", "pwindow_manager"};
 
   int x, y, width, height;
-  HigthlightMonitor hightlight;
   hightlight.size = 25;//pixels
 
   for (int i = 0; i < 4; i++) { // we have four corners
@@ -94,12 +106,16 @@ void *show_higthligth_window(void *in_monitor) {
 
 
   }
+  is_highligthing = true;
 
   sleep(1);
 
-  for (int i = 0; i < 4; i++) { // we have four corners
+  if (is_highligthing == true) {
 
-    XDestroyWindow(display, hightlight.window[i]);
+    for (int i = 0; i < 4; i++) { // we have four corners
+
+      XDestroyWindow(display, hightlight.window[i]);
+    }
   }
 
   return NULL;
