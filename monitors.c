@@ -3,6 +3,7 @@
 #include "pwindow_manager.h"
 #include "util.h"
 #include "windows.h"
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>
 #include <stddef.h>
@@ -13,46 +14,93 @@
 #include <pthread.h>
 #include <unistd.h>
 
-Window hightlight_window;
+typedef struct HigthlightMonitor{
+  Window window[4];
+  int size;
+}HigthlightMonitor;
 
+void fill_higtlight_window(Window window, int width, int height) {
 
-void* show_higthligth_window(void* in_monitor){
-  Monitor* monitor = (Monitor*)in_monitor;
-  
+  draw_rectangle(drw, 0, 0, width, height, 1, 0);
+
+  drw_map(drw, window, 0, 0, width, height);
+}
+
+void *show_higthligth_window(void *in_monitor) {
+  Monitor *monitor = (Monitor *)in_monitor;
+
   XSetWindowAttributes wa = {.override_redirect = True,
                              .background_pixmap = ParentRelative,
                              .event_mask = ExposureMask};
 
   XClassHint class_hint = {"pwindow_manager", "pwindow_manager"};
 
+  int x, y, width, height;
+  HigthlightMonitor hightlight;
+  hightlight.size = 25;//pixels
 
-  hightlight_window =
-        XCreateWindow(display, root, monitor->screen_x,
-                      monitor->screen_y, monitor->screen_width,
-                      monitor->screen_height, 0, DefaultDepth(display, screen),
-                      CopyFromParent, DefaultVisual(display, screen),
-                      CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+  for (int i = 0; i < 4; i++) { // we have four corners
 
-  XMapRaised(display, hightlight_window);
-  XSetClassHint(display, hightlight_window, &class_hint);
+    switch (i) {
+    case 0://up
+      x = monitor->screen_x;
+      y = monitor->screen_y;
+      width = monitor->screen_width;
+      height = hightlight.size;
+      break;
+    case 1://right
+      x = monitor->screen_x+(monitor->screen_width-hightlight.size);
+      y = monitor->screen_y;
+      width = hightlight.size;
+      height = monitor->screen_height;
+      break;
+    case 2://botton
+      x = monitor->screen_x;
+      y = monitor->screen_y+(monitor->screen_height-hightlight.size);
+      width = monitor->screen_width;
+      height = hightlight.size;
+      break;
+    case 3://left
+      x = monitor->screen_x;
+      y = monitor->screen_y;
+      width = hightlight.size;
+      height = monitor->screen_height;
+      break;
+    }
+
+    hightlight.window[i] = XCreateWindow(
+        display, root, x, y, width, height, 0, DefaultDepth(display, screen),
+        CopyFromParent, DefaultVisual(display, screen),
+        CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+
+    XMapRaised(display, hightlight.window[i]);
+    XSetClassHint(display, hightlight.window[i], &class_hint);
+    
+
+    switch (i) {
+    case 0://up
+      fill_higtlight_window(hightlight.window[i], monitor->screen_width, hightlight.size);
+      break;
+    case 1://right
+      fill_higtlight_window(hightlight.window[i], hightlight.size, monitor->screen_height);
+      break;
+    case 2://botton
+      fill_higtlight_window(hightlight.window[i], monitor->screen_width, hightlight.size);
+      break;
+    case 3://left
+      fill_higtlight_window(hightlight.window[i], hightlight.size, monitor->screen_height);
+      break;
+    }
 
 
-
-  draw_rectangle(drw,monitor->window_area_x,monitor->window_area_y,
-        monitor->screen_width, monitor->screen_height, 1 , 0);
-
-  printf("monitor window area: %i %i\n",monitor->window_area_x,monitor->window_area_y);
-  printf("monitor screen : %i %i\n",monitor->screen_x,monitor->screen_y);
-
-
-  drw_map(drw, hightlight_window, monitor->screen_x, monitor->screen_y, monitor->screen_width, monitor->screen_height);
-
+  }
 
   sleep(1);
 
-  XDestroyWindow(display,hightlight_window);
+  for (int i = 0; i < 4; i++) { // we have four corners
 
-
+    XDestroyWindow(display, hightlight.window[i]);
+  }
 
   return NULL;
 }
