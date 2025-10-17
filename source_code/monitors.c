@@ -118,6 +118,8 @@ void *show_higthligth_window(void *in_monitor) {
     }
   }
 
+  draw_bars();
+
   return NULL;
 }
 
