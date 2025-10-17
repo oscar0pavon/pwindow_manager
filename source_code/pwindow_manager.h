@@ -55,7 +55,7 @@ void grabkeys(void);
 void incnmaster(const Arg *arg);
 void keypress(XEvent *e);
 void killclient(const Arg *arg);
-void manage(Window w, XWindowAttributes *wa);
+void setup_window(Window w, XWindowAttributes *wa);
 void mappingnotify(XEvent *e);
 void maprequest(XEvent *e);
 void monocle(Monitor *m);

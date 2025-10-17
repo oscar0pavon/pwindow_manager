@@ -181,7 +181,7 @@ void maprequest(XEvent *e) {
   if (!XGetWindowAttributes(display, ev->window, &wa) || wa.override_redirect)
     return;
   if (!get_client_from_window(ev->window))
-    manage(ev->window, &wa);
+    setup_window(ev->window, &wa);
 }
 
 void motionnotify(XEvent *e) {

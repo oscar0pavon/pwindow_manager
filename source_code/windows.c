@@ -157,7 +157,7 @@ long getstate(Window w) {
   return result;
 }
 
-void manage(Window w, XWindowAttributes *wa) {
+void setup_window(Window w, XWindowAttributes *wa) {
   Client *c, *t = NULL;
   Window trans = None;
   XWindowChanges wc;
@@ -358,27 +358,41 @@ void zoom(const Arg *arg) {
 }
 
 void scan_windows(void) {
-  unsigned int i, num;
-  Window d1, d2, *wins = NULL;
-  XWindowAttributes wa;
+  unsigned int i, number_of_windows;
+  Window parent_return, children_return, *windows = NULL;
+  XWindowAttributes window_attributes;
 
-  if (XQueryTree(display, root, &d1, &d2, &wins, &num)) {
-    for (i = 0; i < num; i++) {
-      if (!XGetWindowAttributes(display, wins[i], &wa) || wa.override_redirect ||
-          XGetTransientForHint(display, wins[i], &d1))
+  if (XQueryTree(display, root, &parent_return, &children_return, &windows,
+                 &number_of_windows)) {
+    for (i = 0; i < number_of_windows; i++) {
+
+      if (!XGetWindowAttributes(display, windows[i], &window_attributes) ||
+          window_attributes.override_redirect ||
+          XGetTransientForHint(display, windows[i], &parent_return)) {
+
         continue;
-      if (wa.map_state == IsViewable || getstate(wins[i]) == IconicState)
-        manage(wins[i], &wa);
+      }
+      if (window_attributes.map_state == IsViewable ||
+          getstate(windows[i]) == IconicState) {
+
+        setup_window(windows[i], &window_attributes);
+      }
     }
-    for (i = 0; i < num; i++) { /* now the transients */
-      if (!XGetWindowAttributes(display, wins[i], &wa))
+    for (i = 0; i < number_of_windows; i++) { /* now the transients */
+
+      if (!XGetWindowAttributes(display, windows[i], &window_attributes))
         continue;
-      if (XGetTransientForHint(display, wins[i], &d1) &&
-          (wa.map_state == IsViewable || getstate(wins[i]) == IconicState))
-        manage(wins[i], &wa);
+
+      if (XGetTransientForHint(display, windows[i], &parent_return) &&
+          (window_attributes.map_state == IsViewable ||
+           getstate(windows[i]) == IconicState)) {
+
+        setup_window(windows[i], &window_attributes);
+      }
     }
-    if (wins)
-      XFree(wins);
+
+    if (windows)
+      XFree(windows);
   }
 }
 
