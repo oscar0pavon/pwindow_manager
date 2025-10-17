@@ -224,3 +224,15 @@ Monitor *wintomon(Window w)
 }
 
 
+Monitor *recttomon(int x, int y, int w, int h)
+{
+	Monitor *m, *r = selected_monitor;
+	int a, area = 0;
+
+	for (m = monitors; m; m = m->next)
+		if ((a = INTERSECT(x, y, w, h, m)) > area) {
+			area = a;
+			r = m;
+		}
+	return r;
+}
