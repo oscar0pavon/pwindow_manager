@@ -32,7 +32,7 @@ void restack(Monitor *m) {
     ;
 }
 
-void focusmon(const Arg *arg) {
+void focus_monitor(const Arg *arg) {
   Monitor *m;
 
   if (!monitors->next)
@@ -43,6 +43,7 @@ void focusmon(const Arg *arg) {
   selected_monitor = m;
   focus(NULL);
 }
+
 
 Monitor *dirtomon(int dir) {
   Monitor *m = NULL;
@@ -69,18 +70,6 @@ Monitor *numtomon(int num) {
   return m;
 }
 
-void focus_monitor(const Arg *arg) {
-  Monitor *m;
-
-  if (!monitors->next)
-    return;
-
-  if ((m = dirtomon(arg->i)) == selected_monitor)
-    return;
-  unfocus(selected_monitor->sel, 0);
-  selected_monitor = m;
-  focus(NULL);
-}
 
 void arrangemon(Monitor *m) {
   strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
@@ -170,16 +159,16 @@ int updategeom(void) {
         monitors = createmon();
     }
     for (i = 0, m = monitors; i < nn && m; m = m->next, i++)
-      if (i >= n || unique[i].x_org != m->mx || unique[i].y_org != m->my ||
-          unique[i].width != m->mw || unique[i].height != m->mh) {
+      if (i >= n || unique[i].x_org != m->screen_x || unique[i].y_org != m->screen_y ||
+          unique[i].width != m->screen_width || unique[i].height != m->screen_height) {
         dirty = 1;
         m->num = i;
         /* this is ugly, but it is a race condition otherwise */
         snprintf(m->monmark, sizeof(m->monmark), "(%d)", m->num);
-        m->mx = m->wx = unique[i].x_org;
-        m->my = m->wy = unique[i].y_org;
-        m->mw = m->ww = unique[i].width;
-        m->mh = m->wh = unique[i].height;
+        m->screen_x = m->window_area_x = unique[i].x_org;
+        m->screen_y = m->window_area_y = unique[i].y_org;
+        m->screen_width = m->window_area_width = unique[i].width;
+        m->screen_height = m->window_area_height = unique[i].height;
         updatebarpos(m);
       }
     /* removed monitors if n > nn */
@@ -204,10 +193,10 @@ int updategeom(void) {
   { /* default monitor setup */
     if (!monitors)
       monitors = createmon();
-    if (monitors->mw != display_width || monitors->mh != display_height) {
+    if (monitors->screen_width != display_width || monitors->screen_height != display_height) {
       dirty = 1;
-      monitors->mw = monitors->ww = display_width;
-      monitors->mh = monitors->wh = display_height;
+      monitors->screen_width = monitors->window_area_width = display_width;
+      monitors->screen_height = monitors->window_area_height = display_height;
       updatebarpos(monitors);
     }
   }

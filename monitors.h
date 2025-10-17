@@ -9,9 +9,9 @@ struct Monitor {
 	float mfact;
 	int nmaster;
 	int num;
-	int by;               /* bar geometry */
-	int mx, my, mw, mh;   /* screen size */
-	int wx, wy, ww, wh;   /* window area  */
+	int bar_geometry;               /* bar geometry */
+	int screen_x, screen_y, screen_width, screen_height;   /* screen size */
+	int window_area_x, window_area_y, window_area_width, window_area_height;   /* window area  */
 	unsigned int seltags;
 	unsigned int sellt;
 	unsigned int tagset[2];
@@ -34,7 +34,7 @@ void drawbar(Monitor *m);
 
 void sendmon(Client *c, Monitor *m);
 
-void focusmon(const Arg *arg);
+void focus_monitor(const Arg *arg);
 int updategeom(void);
 
 

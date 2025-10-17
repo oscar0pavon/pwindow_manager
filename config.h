@@ -130,8 +130,8 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
-	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
-	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
+	{ MODKEY,                       XK_comma,  focus_monitor,       {.i = -1 } },
+	{ MODKEY,                       XK_period, focus_monitor,       {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
 	TAGKEYS(                        XK_1,                      0)
@@ -162,8 +162,8 @@ static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
 	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
-  { ClkMonNum,            0,              Button1,        focusmon,       {.i = +1} },
-  { ClkMonNum,            0,              Button3,        focusmon,       {.i = -1} },
+  { ClkMonNum,            0,              Button1,        focus_monitor,       {.i = +1} },
+  { ClkMonNum,            0,              Button3,        focus_monitor,       {.i = -1} },
 	{ ClkMonNum,            0,              Button2,        reset_view,     {0} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          {.v = terminal} },
