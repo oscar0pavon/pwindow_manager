@@ -43,13 +43,14 @@
 
 #include "pwindow_manager.h"
 #include "windows.h"
+#include "input.h"
 
 
 static const char broken[] = "broken";
 
-unsigned int numlockmask = 0;
-
 char stext[256];
+
+unsigned int numlockmask = 0;
 
 /* variables */
 int screen;
@@ -57,25 +58,8 @@ int display_width, display_height;           /* X display screen geometry width,
 int bar_height;               /* bar height */
 int lrpad;            /* sum of left and right padding for text */
 
-static void (*handler[LASTEvent]) (XEvent *) = {
-	[ButtonPress] = buttonpress,
-	[ClientMessage] = clientmessage,
-	[ConfigureRequest] = configurerequest,
-	[ConfigureNotify] = configurenotify,
-	[DestroyNotify] = destroynotify,
-	[EnterNotify] = enternotify,
-	[Expose] = expose,
-	[FocusIn] = focusin,
-	[KeyPress] = keypress,
-	[MappingNotify] = mappingnotify,
-	[MapRequest] = maprequest,
-	[MotionNotify] = motionnotify,
-	[PropertyNotify] = propertynotify,
-	[UnmapNotify] = unmapnotify
-};
 static int running = 1;
 static Cur *cursor[CurLast];
-static Drw *drw;
 
 Atom wmatom[WMLast], netatom[NetLast];
 Monitor *monitors, *selected_monitor;
@@ -303,49 +287,6 @@ applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
 
 
 
-void
-buttonpress(XEvent *e)
-{
-	unsigned int i, x, click;
-	Arg arg = {0};
-	Client *c;
-	Monitor *m;
-	XButtonPressedEvent *ev = &e->xbutton;
-
-	click = ClkRootWin;
-	/* focus monitor if necessary */
-	if ((m = wintomon(ev->window)) && m != selected_monitor) {
-		unfocus(selected_monitor->sel, 1);
-		selected_monitor = m;
-		focus(NULL);
-	}
-	if (ev->window == selected_monitor->barwin) {
-		i = x = 0;
-		do
-			x += TEXTW(tags[i]);
-		while (ev->x >= x && ++i < LENGTH(tags));
-		if (i < LENGTH(tags)) {
-			click = ClkTagBar;
-			arg.ui = 1 << i;
-		} else if (ev->x < x + TEXTW(selected_monitor->ltsymbol))
-			click = ClkLtSymbol;
-		else if (ev->x < x + TEXTW(selected_monitor->ltsymbol) + TEXTW(selected_monitor->monmark))
-			click = ClkMonNum;
-		else if (ev->x > selected_monitor->window_area_width - (int)TEXTW(stext))
-			click = ClkStatusText;
-		else
-			click = ClkWinTitle;
-	} else if ((c = wintoclient(ev->window))) {
-		focus(c);
-		restack(selected_monitor);
-		XAllowEvents(dpy, ReplayPointer, CurrentTime);
-		click = ClkClientWin;
-	}
-	for (i = 0; i < LENGTH(buttons); i++)
-		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
-		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state))
-			buttons[i].func(click == ClkTagBar && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
-}
 
 void check_other_window_manager(void)
 {
@@ -2065,6 +2006,54 @@ reset_view(const Arg *arg) {
 	while (selected_monitor->num != mon);
 }
 
+void
+movestack(const Arg *arg) {
+	Client *c = NULL, *p = NULL, *pc = NULL, *i;
+
+	if(arg->i > 0) {
+		/* find the client after selmon->sel */
+		for(c = selected_monitor->sel->next; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
+		if(!c)
+			for(c = selected_monitor->clients; c && (!ISVISIBLE(c) || c->isfloating); c = c->next);
+
+	}
+	else {
+		/* find the client before selmon->sel */
+		for(i = selected_monitor->clients; i != selected_monitor->sel; i = i->next)
+			if(ISVISIBLE(i) && !i->isfloating)
+				c = i;
+		if(!c)
+			for(; i; i = i->next)
+				if(ISVISIBLE(i) && !i->isfloating)
+					c = i;
+	}
+	/* find the client before selmon->sel and c */
+	for(i = selected_monitor->clients; i && (!p || !pc); i = i->next) {
+		if(i->next == selected_monitor->sel)
+			p = i;
+		if(i->next == c)
+			pc = i;
+	}
+
+	/* swap c and selmon->sel selmon->clients in the selmon->clients list */
+	if(c && c != selected_monitor->sel) {
+		Client *temp = selected_monitor->sel->next==c?selected_monitor->sel:selected_monitor->sel->next;
+		selected_monitor->sel->next = c->next==selected_monitor->sel?c:c->next;
+		c->next = temp;
+
+		if(p && p != c)
+			p->next = c;
+		if(pc && pc != selected_monitor->sel)
+			pc->next = selected_monitor->sel;
+
+		if(selected_monitor->sel == selected_monitor->clients)
+			selected_monitor->clients = c;
+		else if(c == selected_monitor->clients)
+			selected_monitor->clients = selected_monitor->sel;
+
+		arrange(selected_monitor);
+	}
+}
 
 
 int main(int argc, char *argv[])

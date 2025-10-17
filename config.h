@@ -1,4 +1,6 @@
 /* See LICENSE file for copyright and license details. */
+#ifndef CONFIG_H
+#define CONFIG_H
 
 /* appearance */
 #include <X11/X.h>
@@ -96,7 +98,6 @@ static const char *screenshot_select[]  = { "scrot", "-s", NULL };
 static const char *volume_up[]  = { "volume_up", NULL };
 static const char *volume_down[]  = { "volume_down", NULL };
 
-#include "movestack.c"
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -196,3 +197,6 @@ static const char *const autostart[] = {
 	//"picom", NULL,
 	NULL
 };
+
+
+#endif

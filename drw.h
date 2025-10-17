@@ -32,6 +32,8 @@ typedef struct {
 	Fnt *fonts;
 } Drw;
 
+extern Drw *drw;
+
 /* Drawable abstraction */
 Drw *drw_create(Display *dpy, int screen, Window win, unsigned int w, unsigned int h);
 void drw_resize(Drw *drw, unsigned int w, unsigned int h);

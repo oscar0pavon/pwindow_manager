@@ -32,6 +32,7 @@ void configurerequest(XEvent *e);
 void destroynotify(XEvent *e);
 
 
+void movestack(const Arg *arg);
 
 
 void window_to_monitor_and_focus(const Arg *arg);
@@ -139,5 +140,8 @@ extern int display_width, display_height;           /* X display screen geometry
 extern int bar_height;               /* bar height */
 extern int lrpad;            /* sum of left and right padding for text */
 
+extern char stext[256];
+
+extern unsigned int numlockmask;
 
 #endif

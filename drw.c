@@ -8,6 +8,8 @@
 #include "drw.h"
 #include "util.h"
 
+Drw *drw;
+
 #define UTF_INVALID 0xFFFD
 #define UTF_SIZ     4
 
