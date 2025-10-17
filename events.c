@@ -33,7 +33,7 @@ void configure(Client *c) {
   ce.y = c->y;
   ce.width = c->w;
   ce.height = c->h;
-  ce.border_width = c->bw;
+  ce.border_width = c->border_width;
   ce.above = None;
   ce.override_redirect = False;
   XSendEvent(dpy, c->win, False, StructureNotifyMask, (XEvent *)&ce);
@@ -75,7 +75,7 @@ void configurerequest(XEvent *e) {
 
   if ((c = wintoclient(ev->window))) {
     if (ev->value_mask & CWBorderWidth)
-      c->bw = ev->border_width;
+      c->border_width = ev->border_width;
     else if (c->isfloating ||
              !selected_monitor->lt[selected_monitor->sellt]->arrange) {
       m = c->mon;

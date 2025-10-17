@@ -117,7 +117,7 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_o,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-//{ MODKEY,                       XK_Return, zoom,           {0} },
+	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
 	{ MODKEY|ShiftMask,             XK_q,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
@@ -148,7 +148,7 @@ static const Key keys[] = {
 	{MODKEY|ShiftMask,												XK_l,		window_to_monitor_and_focus,			 {.i = 1}}, 
 	{ALTMOD|ShiftMask,												XK_h,		window_to_monitor,			 {.i = 0}}, 
 	{ALTMOD|ShiftMask,												XK_l,		window_to_monitor,			 {.i = 1}}, 
-	{MODKEY,             XK_r,      move_godot_to_monitor,           {0} },
+//	{MODKEY,             XK_r,      move_godot_to_monitor,           {0} },
 	{MODKEY|ShiftMask,             XK_x,      full_screen_floating_window ,           {0} },
 	{MODKEY|ShiftMask,             XK_z,      minimal_screen_floating_window ,           {0} },
 };

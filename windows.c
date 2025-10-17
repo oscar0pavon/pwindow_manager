@@ -97,8 +97,8 @@ void setfullscreen(Client *c, int fullscreen) {
                     1);
     c->isfullscreen = 1;
     c->oldstate = c->isfloating;
-    c->oldbw = c->bw;
-    c->bw = 0;
+    c->oldbw = c->border_width;
+    c->border_width = 0;
     c->isfloating = 1;
     resizeclient(c, c->mon->screen_x, c->mon->screen_y, c->mon->screen_width,
                  c->mon->screen_height);
@@ -108,7 +108,7 @@ void setfullscreen(Client *c, int fullscreen) {
                     PropModeReplace, (unsigned char *)0, 0);
     c->isfullscreen = 0;
     c->isfloating = c->oldstate;
-    c->bw = c->oldbw;
+    c->border_width = c->oldbw;
     c->x = c->oldx;
     c->y = c->oldy;
     c->w = c->oldw;
@@ -171,9 +171,9 @@ void manage(Window w, XWindowAttributes *wa) {
     c->y = c->mon->window_area_y + c->mon->window_area_height - HEIGHT(c);
   c->x = MAX(c->x, c->mon->window_area_x);
   c->y = MAX(c->y, c->mon->window_area_y);
-  c->bw = borderpx;
+  c->border_width = borderpx;
 
-  wc.border_width = c->bw;
+  wc.border_width = c->border_width;
   XConfigureWindow(dpy, w, CWBorderWidth, &wc);
   XSetWindowBorder(dpy, w, scheme[SchemeNorm][ColBorder].pixel);
   configure(c); /* propagates border_width, if size doesn't change */
@@ -219,7 +219,7 @@ void resizeclient(Client *c, int x, int y, int w, int h) {
   c->w = wc.width = w;
   c->oldh = c->h;
   c->h = wc.height = h;
-  wc.border_width = c->bw;
+  wc.border_width = c->border_width;
   XConfigureWindow(dpy, c->win, CWX | CWY | CWWidth | CWHeight | CWBorderWidth,
                    &wc);
   configure(c);
@@ -292,4 +292,52 @@ void set_window_dimention(Client *window, Monitor *monitor, int width,
   if (window->isfloating)
     resize(window, 0, 0, width, height, 0);
   arrange(monitor);
+}
+
+void unfocus(Client *c, int setfocus) {
+  if (!c)
+    return;
+  grabbuttons(c, 0);
+  XSetWindowBorder(dpy, c->win, scheme[SchemeNorm][ColBorder].pixel);
+  if (setfocus) {
+    XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
+    XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+  }
+}
+
+void togglefloating(const Arg *arg) {
+  if (!selected_monitor->sel)
+    return;
+  if (selected_monitor->sel
+          ->isfullscreen) /* no support for fullscreen windows */
+    return;
+  selected_monitor->sel->isfloating =
+      !selected_monitor->sel->isfloating || selected_monitor->sel->isfixed;
+  if (selected_monitor->sel->isfloating)
+    resize(selected_monitor->sel, selected_monitor->sel->x,
+           selected_monitor->sel->y, selected_monitor->sel->w,
+           selected_monitor->sel->h, 0);
+  arrange(selected_monitor);
+}
+
+Client *wintoclient(Window w) {
+  Client *c;
+  Monitor *m;
+
+  for (m = monitors; m; m = m->next)
+    for (c = m->clients; c; c = c->next)
+      if (c->win == w)
+        return c;
+  return NULL;
+}
+
+void zoom(const Arg *arg) {
+  Client *c = selected_monitor->sel;
+
+  if (!selected_monitor->lt[selected_monitor->sellt]->arrange || !c ||
+      c->isfloating)
+    return;
+  if (c == nexttiled(selected_monitor->clients) && !(c = nexttiled(c->next)))
+    return;
+  pop(c);
 }

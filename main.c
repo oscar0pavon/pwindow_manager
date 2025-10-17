@@ -219,18 +219,18 @@ int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact) {
       *x = display_width - WIDTH(c);
     if (*y > display_height)
       *y = display_height - HEIGHT(c);
-    if (*x + *w + 2 * c->bw < 0)
+    if (*x + *w + 2 * c->border_width < 0)
       *x = 0;
-    if (*y + *h + 2 * c->bw < 0)
+    if (*y + *h + 2 * c->border_width < 0)
       *y = 0;
   } else {
     if (*x >= m->window_area_x + m->window_area_width)
       *x = m->window_area_x + m->window_area_width - WIDTH(c);
     if (*y >= m->window_area_y + m->window_area_height)
       *y = m->window_area_y + m->window_area_height - HEIGHT(c);
-    if (*x + *w + 2 * c->bw <= m->window_area_x)
+    if (*x + *w + 2 * c->border_width <= m->window_area_x)
       *x = m->window_area_x;
-    if (*y + *h + 2 * c->bw <= m->window_area_y)
+    if (*y + *h + 2 * c->border_width <= m->window_area_y)
       *y = m->window_area_y;
   }
   if (*h < bar_height)
@@ -494,7 +494,7 @@ void monocle(Monitor *m) {
     snprintf(m->ltsymbol, sizeof m->ltsymbol, "[%d]", n);
   for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
     resize(c, m->window_area_x, m->window_area_y,
-           m->window_area_width - 2 * c->bw, m->window_area_height - 2 * c->bw,
+           m->window_area_width - 2 * c->border_width, m->window_area_height - 2 * c->border_width,
            0);
 }
 
@@ -536,77 +536,6 @@ void quit(const Arg *arg) {
   running = 0;
 }
 
-bool game_editor_moved = false;
-Client *game_editor_window = NULL;
-Monitor *target_monitor = NULL;
-
-bool is_playing_basket(const char *instance, const char *class, char *name) {
-
-  if (strcmp(instance, "Godot_Engine") == 0 && strcmp(class, "basket") == 0 &&
-      strcmp(name, "basket (DEBUG)") == 0) {
-    return true;
-  }
-
-  return false;
-}
-
-bool is_playing_race(const char *instance, const char *class, char *name) {
-
-  if (strcmp(instance, "Godot_Engine") == 0 &&
-      strcmp(class, "speed_mostsimple") == 0 &&
-      strcmp(name, "speed_mostsimple (DEBUG)") == 0) {
-    return true;
-  }
-
-  return false;
-}
-
-void move_godot_to_monitor(const Arg *arg) {
-  Client *window;
-  const char *class, *instance;
-  XClassHint ch = {NULL, NULL};
-
-  if (target_monitor != NULL) {
-    Client *target_window = NULL;
-    bool found_game_window = false;
-    for (target_window = target_monitor->clients;
-         target_window && ISVISIBLE(target_window);
-         target_window = target_window->next) {
-      XGetClassHint(dpy, target_window->win, &ch);
-      class = ch.res_class ? ch.res_class : broken;
-      instance = ch.res_name ? ch.res_name : broken;
-      if (is_playing_race(instance, class, target_window->name)) {
-        found_game_window = true;
-        return;
-      }
-    }
-    if (!found_game_window) {
-      target_monitor = false;
-      game_editor_moved = false;
-    }
-  }
-
-  // move window to the next monitor
-  for (window = selected_monitor->clients; window && ISVISIBLE(window);
-       window = window->next) {
-    XGetClassHint(dpy, window->win, &ch);
-    class = ch.res_class ? ch.res_class : broken;
-    instance = ch.res_name ? ch.res_name : broken;
-    if (is_playing_race(instance, class, window->name)) {
-      if (game_editor_moved == false) {
-        window->isfloating = true;
-        target_monitor = dirtomon(-1);
-        // send_to_monitor(window, target_monitor);
-        // set_window_floating(window,target_monitor);
-        // set_window_dimention(window,target_monitor,1920,1080);
-        // set_window_floating(window,selmon);
-        // set_window_dimention(window,selmon,1280,720);
-        game_editor_window = window;
-        game_editor_moved = true;
-      }
-    }
-  }
-}
 
 void pushdown(const Arg *arg) {
   Client *sel = selected_monitor->sel, *c;
@@ -866,14 +795,14 @@ void tile(Monitor *m) {
        c = nexttiled(c->next), i++)
     if (i < m->nmaster) {
       h = (m->window_area_height - my) / (MIN(n, m->nmaster) - i);
-      resize(c, m->window_area_x, m->window_area_y + my, mw - (2 * c->bw),
-             h - (2 * c->bw), 0);
+      resize(c, m->window_area_x, m->window_area_y + my, mw - (2 * c->border_width),
+             h - (2 * c->border_width), 0);
       if (my + HEIGHT(c) < m->window_area_height)
         my += HEIGHT(c);
     } else {
       h = (m->window_area_height - ty) / (n - i);
       resize(c, m->window_area_x + mw, m->window_area_y + ty,
-             m->window_area_width - mw - (2 * c->bw), h - (2 * c->bw), 0);
+             m->window_area_width - mw - (2 * c->border_width), h - (2 * c->border_width), 0);
       if (ty + HEIGHT(c) < m->window_area_height)
         ty += HEIGHT(c);
     }
@@ -893,20 +822,6 @@ void togglebar(const Arg *arg) {
   arrange(selected_monitor);
 }
 
-void togglefloating(const Arg *arg) {
-  if (!selected_monitor->sel)
-    return;
-  if (selected_monitor->sel
-          ->isfullscreen) /* no support for fullscreen windows */
-    return;
-  selected_monitor->sel->isfloating =
-      !selected_monitor->sel->isfloating || selected_monitor->sel->isfixed;
-  if (selected_monitor->sel->isfloating)
-    resize(selected_monitor->sel, selected_monitor->sel->x,
-           selected_monitor->sel->y, selected_monitor->sel->w,
-           selected_monitor->sel->h, 0);
-  arrange(selected_monitor);
-}
 
 void toggletag(const Arg *arg) {
   unsigned int newtags;
@@ -941,16 +856,6 @@ void toggleview(const Arg *arg) {
   }
 }
 
-void unfocus(Client *c, int setfocus) {
-  if (!c)
-    return;
-  grabbuttons(c, 0);
-  XSetWindowBorder(dpy, c->win, scheme[SchemeNorm][ColBorder].pixel);
-  if (setfocus) {
-    XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
-    XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
-  }
-}
 
 void unmanage(Client *c, int destroyed) {
   Monitor *m = c->mon;
@@ -1141,27 +1046,7 @@ void view(const Arg *arg) {
   arrange(selected_monitor);
 }
 
-Client *wintoclient(Window w) {
-  Client *c;
-  Monitor *m;
 
-  for (m = monitors; m; m = m->next)
-    for (c = m->clients; c; c = c->next)
-      if (c->win == w)
-        return c;
-  return NULL;
-}
-
-void zoom(const Arg *arg) {
-  Client *c = selected_monitor->sel;
-
-  if (!selected_monitor->lt[selected_monitor->sellt]->arrange || !c ||
-      c->isfloating)
-    return;
-  if (c == nexttiled(selected_monitor->clients) && !(c = nexttiled(c->next)))
-    return;
-  pop(c);
-}
 
 void reset_view(const Arg *arg) {
   const int mon = selected_monitor->num;
@@ -1292,7 +1177,7 @@ int main(int argc, char *argv[]) {
     if (handler[ev.type]) {
       handler[ev.type](&ev); /* call handler */
     }
-    move_godot_to_monitor(0);
+    //move_godot_to_monitor(0);
   }
 
   cleanup();
