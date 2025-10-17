@@ -19,6 +19,8 @@ void attachstack(Client *c);
 
 void showhide(Client *c);
 
+void scan_windows(void);
+
 extern const char broken[];
 
 #endif

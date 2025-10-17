@@ -341,3 +341,240 @@ void zoom(const Arg *arg) {
     return;
   pop(c);
 }
+
+void scan_windows(void) {
+  unsigned int i, num;
+  Window d1, d2, *wins = NULL;
+  XWindowAttributes wa;
+
+  if (XQueryTree(display, root, &d1, &d2, &wins, &num)) {
+    for (i = 0; i < num; i++) {
+      if (!XGetWindowAttributes(display, wins[i], &wa) || wa.override_redirect ||
+          XGetTransientForHint(display, wins[i], &d1))
+        continue;
+      if (wa.map_state == IsViewable || getstate(wins[i]) == IconicState)
+        manage(wins[i], &wa);
+    }
+    for (i = 0; i < num; i++) { /* now the transients */
+      if (!XGetWindowAttributes(display, wins[i], &wa))
+        continue;
+      if (XGetTransientForHint(display, wins[i], &d1) &&
+          (wa.map_state == IsViewable || getstate(wins[i]) == IconicState))
+        manage(wins[i], &wa);
+    }
+    if (wins)
+      XFree(wins);
+  }
+}
+
+int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact) {
+  int baseismin;
+  Monitor *m = c->mon;
+
+  /* set minimum possible */
+  *w = MAX(1, *w);
+  *h = MAX(1, *h);
+  if (interact) {
+    if (*x > display_width)
+      *x = display_width - WIDTH(c);
+    if (*y > display_height)
+      *y = display_height - HEIGHT(c);
+    if (*x + *w + 2 * c->border_width < 0)
+      *x = 0;
+    if (*y + *h + 2 * c->border_width < 0)
+      *y = 0;
+  } else {
+    if (*x >= m->window_area_x + m->window_area_width)
+      *x = m->window_area_x + m->window_area_width - WIDTH(c);
+    if (*y >= m->window_area_y + m->window_area_height)
+      *y = m->window_area_y + m->window_area_height - HEIGHT(c);
+    if (*x + *w + 2 * c->border_width <= m->window_area_x)
+      *x = m->window_area_x;
+    if (*y + *h + 2 * c->border_width <= m->window_area_y)
+      *y = m->window_area_y;
+  }
+  if (*h < bar_height)
+    *h = bar_height;
+  if (*w < bar_height)
+    *w = bar_height;
+  if (resizehints || c->isfloating || !c->mon->lt[c->mon->sellt]->arrange) {
+    if (!c->hintsvalid)
+      updatesizehints(c);
+    /* see last two sentences in ICCCM 4.1.2.3 */
+    baseismin = c->basew == c->minw && c->baseh == c->minh;
+    if (!baseismin) { /* temporarily remove base dimensions */
+      *w -= c->basew;
+      *h -= c->baseh;
+    }
+    /* adjust for aspect limits */
+    if (c->mina > 0 && c->maxa > 0) {
+      if (c->maxa < (float)*w / *h)
+        *w = *h * c->maxa + 0.5;
+      else if (c->mina < (float)*h / *w)
+        *h = *w * c->mina + 0.5;
+    }
+    if (baseismin) { /* increment calculation requires this */
+      *w -= c->basew;
+      *h -= c->baseh;
+    }
+    /* adjust for increment value */
+    if (c->incw)
+      *w -= *w % c->incw;
+    if (c->inch)
+      *h -= *h % c->inch;
+    /* restore base dimensions */
+    *w = MAX(*w + c->basew, c->minw);
+    *h = MAX(*h + c->baseh, c->minh);
+    if (c->maxw)
+      *w = MIN(*w, c->maxw);
+    if (c->maxh)
+      *h = MIN(*h, c->maxh);
+  }
+  return *x != c->x || *y != c->y || *w != c->w || *h != c->h;
+}
+
+void movetoedge(const Arg *arg) {
+
+  // only floating windows can be moved/
+
+  Client *c;
+  c = selected_monitor->selected_client;
+  int x, y, nx, ny;
+
+  if (!c || !arg)
+    return;
+  if (selected_monitor->lt[selected_monitor->sellt]->arrange && !c->isfloating)
+    return;
+  if (sscanf((char *)arg->v, "%d %d", &x, &y) != 2)
+    return;
+
+  if (x == 0)
+    nx = (selected_monitor->screen_width - c->w) / 2;
+  else if (x == -1)
+    nx = borderpx;
+  else if (x == 1)
+    nx = selected_monitor->screen_width - (c->w + 2 * borderpx);
+  else
+    nx = c->x;
+
+  if (y == 0)
+    ny = (selected_monitor->screen_height - (c->h + bar_height)) / 2;
+  else if (y == -1)
+    ny = bar_height + borderpx;
+  else if (y == 1)
+    ny = selected_monitor->screen_height - (c->h + 2 * borderpx);
+  else
+    ny = c->y;
+
+  XRaiseWindow(display, c->win);
+  resize(c, nx, ny, c->w, c->h, True);
+}
+
+void moveresizewebcam(const Arg *arg) {
+  XEvent ev;
+  Monitor *m = selected_monitor;
+
+  if (!(m->selected_client && arg && arg->v && m->selected_client->isfloating))
+    return;
+
+  resize(m->selected_client, m->selected_client->x + ((int *)arg->v)[0], m->selected_client->y + ((int *)arg->v)[1],
+         m->selected_client->w + ((int *)arg->v)[2], m->selected_client->h + ((int *)arg->v)[3], True);
+
+  while (XCheckMaskEvent(display, EnterWindowMask, &ev))
+    ;
+  Arg new_arg;
+  new_arg.v = "1 1";
+  movetoedge(&new_arg);
+}
+
+void moveresize(const Arg *arg) {
+  XEvent ev;
+  Monitor *m = selected_monitor;
+
+  if (!(m->selected_client && arg && arg->v && m->selected_client->isfloating))
+    return;
+
+  resize(m->selected_client, m->selected_client->x + ((int *)arg->v)[0], m->selected_client->y + ((int *)arg->v)[1],
+         m->selected_client->w + ((int *)arg->v)[2], m->selected_client->h + ((int *)arg->v)[3], True);
+
+  while (XCheckMaskEvent(display, EnterWindowMask, &ev))
+    ;
+}
+
+Atom getatomprop(Client *c, Atom prop) {
+  int di;
+  unsigned long dl;
+  unsigned char *p = NULL;
+  Atom da, atom = None;
+
+  if (XGetWindowProperty(display, c->win, prop, 0L, sizeof atom, False, XA_ATOM,
+                         &da, &di, &dl, &dl, &p) == Success &&
+      p) {
+    atom = *(Atom *)p;
+    XFree(p);
+  }
+  return atom;
+}
+
+void killclient(const Arg *arg) {
+  if (!selected_monitor->selected_client)
+    return;
+  if (!sendevent(selected_monitor->selected_client, wmatom[WMDelete])) {
+    XGrabServer(display);
+    XSetErrorHandler(xerrordummy);
+    XSetCloseDownMode(display, DestroyAll);
+    XKillClient(display, selected_monitor->selected_client->win);
+    XSync(display, False);
+    XSetErrorHandler(xerror);
+    XUngrabServer(display);
+  }
+}
+
+void setclientstate(Client *c, long state) {
+  long data[] = {state, None};
+
+  XChangeProperty(display, c->win, wmatom[WMState], wmatom[WMState], 32,
+                  PropModeReplace, (unsigned char *)data, 2);
+}
+
+void updatesizehints(Client *c) {
+  long msize;
+  XSizeHints size;
+
+  if (!XGetWMNormalHints(display, c->win, &size, &msize))
+    /* size is uninitialized, ensure that size.flags aren't used */
+    size.flags = PSize;
+  if (size.flags & PBaseSize) {
+    c->basew = size.base_width;
+    c->baseh = size.base_height;
+  } else if (size.flags & PMinSize) {
+    c->basew = size.min_width;
+    c->baseh = size.min_height;
+  } else
+    c->basew = c->baseh = 0;
+  if (size.flags & PResizeInc) {
+    c->incw = size.width_inc;
+    c->inch = size.height_inc;
+  } else
+    c->incw = c->inch = 0;
+  if (size.flags & PMaxSize) {
+    c->maxw = size.max_width;
+    c->maxh = size.max_height;
+  } else
+    c->maxw = c->maxh = 0;
+  if (size.flags & PMinSize) {
+    c->minw = size.min_width;
+    c->minh = size.min_height;
+  } else if (size.flags & PBaseSize) {
+    c->minw = size.base_width;
+    c->minh = size.base_height;
+  } else
+    c->minw = c->minh = 0;
+  if (size.flags & PAspect) {
+    c->mina = (float)size.min_aspect.y / size.min_aspect.x;
+    c->maxa = (float)size.max_aspect.x / size.max_aspect.y;
+  } else
+    c->maxa = c->mina = 0.0;
+  c->isfixed = (c->maxw && c->maxh && c->maxw == c->minw && c->maxh == c->minh);
+  c->hintsvalid = 1;
+}

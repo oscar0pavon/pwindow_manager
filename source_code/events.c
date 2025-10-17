@@ -257,3 +257,15 @@ int sendevent(Client *c, Atom proto) {
   }
   return exists;
 }
+
+void unmapnotify(XEvent *e) {
+  Client *c;
+  XUnmapEvent *ev = &e->xunmap;
+
+  if ((c = get_client_from_window(ev->window))) {
+    if (ev->send_event)
+      setclientstate(c, WithdrawnState);
+    else
+      unmanage(c, 0);
+  }
+}
