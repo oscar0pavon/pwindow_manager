@@ -794,20 +794,21 @@ int main(int argc, char *argv[]) {
   //	const Arg r = {0};
   //	reset_view(&r);
 
-  XEvent ev;
 
+  //focus to monitor 0 when started
   Arg arg;
   arg.i = 0;
-
   focus_monitor(&arg);
 
   /* main event loop */
+  XEvent window_manager_events;
   XSync(display, False);
-  while (running && !XNextEvent(display, &ev)) {
-    if (handler[ev.type]) {
-      handler[ev.type](&ev); /* call handler */
+  while (running && !XNextEvent(display, &window_manager_events)) {
+    if (handler[window_manager_events.type]) {
+      handler[window_manager_events.type](
+          &window_manager_events); /* call handler */
     }
-    //move_godot_to_monitor(0);
+    // move_godot_to_monitor(0);
   }
 
   cleanup();
