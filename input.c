@@ -4,8 +4,10 @@
 #include "pwindow_manager.h"
 #include "windows.h"
 #include "types.h"
-#include "drw.h"
 #include "config.h"
+#include "events.h"
+
+#include "draw.h"
 
 Cur *cursor[CurLast];
 
@@ -225,4 +227,23 @@ void grabkeys(void)
 							 GrabModeAsync, GrabModeAsync);
 		XFree(syms);
 	}
+}
+
+void grabbuttons(Client *c, int focused) {
+  updatenumlockmask();
+  {
+    unsigned int i, j;
+    unsigned int modifiers[] = {0, LockMask, numlockmask,
+                                numlockmask | LockMask};
+    XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
+    if (!focused)
+      XGrabButton(dpy, AnyButton, AnyModifier, c->win, False, BUTTONMASK,
+                  GrabModeSync, GrabModeSync, None, None);
+    for (i = 0; i < LENGTH(buttons); i++)
+      if (buttons[i].click == ClkClientWin)
+        for (j = 0; j < LENGTH(modifiers); j++)
+          XGrabButton(dpy, buttons[i].button, buttons[i].mask | modifiers[j],
+                      c->win, False, BUTTONMASK, GrabModeAsync, GrabModeSync,
+                      None, None);
+  }
 }

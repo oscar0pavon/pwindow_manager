@@ -7,7 +7,7 @@
 #include "types.h"
 #include "monitors.h"
 
-#include "drw.h"
+#include "draw.h"
 
 
 extern Atom wmatom[WMLast], netatom[NetLast];
@@ -25,11 +25,7 @@ void buttonpress(XEvent *e);
 void checkotherwm(void);
 void cleanup(void);
 void cleanupmon(Monitor *mon);
-void clientmessage(XEvent *e);
 void configure(Client *c);
-void configurenotify(XEvent *e);
-void configurerequest(XEvent *e);
-void destroynotify(XEvent *e);
 
 
 void movestack(const Arg *arg);
@@ -48,9 +44,6 @@ void minimal_screen_floating_window(const Arg* arg);
 
 void drawbars(void);
 
-void enternotify(XEvent *e);
-void expose(XEvent *e);
-void focusin(XEvent *e);
 void focusstack(const Arg *arg);
 Atom getatomprop(Client *c, Atom prop);
 int getrootptr(int *x, int *y);

@@ -3,7 +3,7 @@
 
 #include <X11/Xlib.h>
 #include "types.h"
-#include "drw.h"
+#include "draw.h"
 
 extern void (*handler[LASTEvent]) (XEvent *);
 

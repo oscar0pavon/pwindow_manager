@@ -7,6 +7,7 @@
 #include <X11/extensions/Xinerama.h>
 #include <stddef.h>
 #include <string.h>
+#include "config.h"
 
 void restack(Monitor *m) {
   Client *c;
@@ -235,4 +236,21 @@ Monitor *recttomon(int x, int y, int w, int h)
 			r = m;
 		}
 	return r;
+}
+
+Monitor *createmon(void) {
+  Monitor *m;
+
+  m = ecalloc(1, sizeof(Monitor));
+  m->tagset[0] = m->tagset[1] = 1;
+  m->mfact = mfact;
+  m->nmaster = nmaster;
+  m->showbar = showbar;
+  m->topbar = topbar;
+  m->lt[0] = &layouts[0];
+  m->lt[1] = &layouts[1 % LENGTH(layouts)];
+  strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
+  /* this is actually set in updategeom, to avoid a race condition */
+  //	snprintf(m->monmark, sizeof(m->monmark), "(%d)", m->num);
+  return m;
 }
