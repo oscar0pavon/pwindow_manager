@@ -157,64 +157,71 @@ long getstate(Window w) {
   return result;
 }
 
-void setup_window(Window w, XWindowAttributes *wa) {
-  Client *c, *t = NULL;
-  Window trans = None;
-  XWindowChanges wc;
+void setup_window(Window w, XWindowAttributes *window_attributes) {
+  Client *client, *t = NULL;
+  Window transient_window = None;
+  XWindowChanges window_changes;
 
-  c = ecalloc(1, sizeof(Client));
-  c->win = w;
+  client = ecalloc(1, sizeof(Client));
+  client->win = w;
   /* geometry */
-  c->x = c->oldx = wa->x;
-  c->y = c->oldy = wa->y;
-  c->w = c->oldw = wa->width;
-  c->h = c->oldh = wa->height;
-  c->oldbw = wa->border_width;
+  client->x = client->oldx = window_attributes->x;
+  client->y = client->oldy = window_attributes->y;
+  client->w = client->oldw = window_attributes->width;
+  client->h = client->oldh = window_attributes->height;
+  client->oldbw = window_attributes->border_width;
 
-  updatetitle(c);
-  if (XGetTransientForHint(display, w, &trans) && (t = get_client_from_window(trans))) {
-    c->mon = t->mon;
-    c->tags = t->tags;
+  updatetitle(client);
+  if (XGetTransientForHint(display, w, &transient_window) &&
+      (t = get_client_from_window(transient_window))) {
+    client->mon = t->mon;
+    client->tags = t->tags;
   } else {
-    c->mon = selected_monitor;
-    applyrules(c);
+    client->mon = selected_monitor;
+    applyrules(client);
   }
 
-  if (c->x + WIDTH(c) > c->mon->window_area_x + c->mon->window_area_width)
-    c->x = c->mon->window_area_x + c->mon->window_area_width - WIDTH(c);
-  if (c->y + HEIGHT(c) > c->mon->window_area_y + c->mon->window_area_height)
-    c->y = c->mon->window_area_y + c->mon->window_area_height - HEIGHT(c);
-  c->x = MAX(c->x, c->mon->window_area_x);
-  c->y = MAX(c->y, c->mon->window_area_y);
-  c->border_width = borderpx;
+  if (client->x + WIDTH(client) >
+      client->mon->window_area_x + client->mon->window_area_width)
+    client->x = client->mon->window_area_x + client->mon->window_area_width -
+                WIDTH(client);
+  if (client->y + HEIGHT(client) >
+      client->mon->window_area_y + client->mon->window_area_height)
+    client->y = client->mon->window_area_y + client->mon->window_area_height -
+                HEIGHT(client);
+  client->x = MAX(client->x, client->mon->window_area_x);
+  client->y = MAX(client->y, client->mon->window_area_y);
+  client->border_width = borderpx;
 
-  wc.border_width = c->border_width;
-  XConfigureWindow(display, w, CWBorderWidth, &wc);
+  window_changes.border_width = client->border_width;
+  XConfigureWindow(display, w, CWBorderWidth, &window_changes);
   XSetWindowBorder(display, w, color_scheme[SchemeNormal][ColBorder].pixel);
-  configure(c); /* propagates border_width, if size doesn't change */
-  updatewindowtype(c);
-  updatesizehints(c);
-  updatewmhints(c);
+  configure(client); /* propagates border_width, if size doesn't change */
+  updatewindowtype(client);
+  updatesizehints(client);
+  updatewmhints(client);
   XSelectInput(display, w,
                EnterWindowMask | FocusChangeMask | PropertyChangeMask |
                    StructureNotifyMask);
-  grabbuttons(c, 0);
-  if (!c->isfloating)
-    c->isfloating = c->oldstate = trans != None || c->isfixed;
-  if (c->isfloating)
-    XRaiseWindow(display, c->win);
-  attach(c);
-  attachstack(c);
+  grabbuttons(client, 0);
+  if (!client->isfloating)
+    client->isfloating = client->oldstate =
+        transient_window != None || client->isfixed;
+  if (client->isfloating)
+    XRaiseWindow(display, client->win);
+  attach(client);
+  attachstack(client);
   XChangeProperty(display, root, netatom[NetClientList], XA_WINDOW, 32,
-                  PropModeAppend, (unsigned char *)&(c->win), 1);
-  XMoveResizeWindow(display, c->win, c->x + 2 * display_width, c->y, c->w,
-                    c->h); /* some windows require this */
-  setclientstate(c, NormalState);
-  if (c->mon == selected_monitor)
+                  PropModeAppend, (unsigned char *)&(client->win), 1);
+  XMoveResizeWindow(display, client->win, client->x + 2 * display_width,
+                    client->y, client->w,
+                    client->h); /* some windows require this */
+  setclientstate(client, NormalState);
+  if (client->mon == selected_monitor)
     unfocus(selected_monitor->selected_client, 0);
-  c->mon->selected_client = c;
-  arrange(c->mon);
-  XMapWindow(display, c->win);
+  client->mon->selected_client = client;
+  arrange(client->mon);
+  XMapWindow(display, client->win);
   focus(NULL);
 }
 
