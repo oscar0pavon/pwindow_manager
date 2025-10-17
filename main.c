@@ -63,7 +63,7 @@ Atom wmatom[WMLast], netatom[NetLast];
 Monitor *monitors, *selected_monitor;
 Display *dpy;
 Window root, wmcheckwin;
-Clr **scheme;
+Color **scheme;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -774,7 +774,7 @@ void setup(void) {
   cursor[CurResize] = drw_cur_create(drw, XC_sizing);
   cursor[CurMove] = drw_cur_create(drw, XC_fleur);
   /* init appearance */
-  scheme = ecalloc(LENGTH(colors), sizeof(Clr *));
+  scheme = ecalloc(LENGTH(colors), sizeof(Color *));
   for (i = 0; i < LENGTH(colors); i++)
     scheme[i] = drw_scm_create(drw, colors[i], 3);
   /* init bars */
