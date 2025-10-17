@@ -6,5 +6,12 @@ clean:
 	rm -f pwindow_manager
 	make -C source_code clean
 
+
 install:
-	make -C source_code install
+	pkill pwindow_manager
+	sleep 1
+	cp pwindow_manager /usr/bin
+	pwindow_manager &
+
+uninstall:
+	rm -f /usr/bin/pwindow_manager

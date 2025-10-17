@@ -791,10 +791,6 @@ int main(int argc, char *argv[]) {
 
   scan_windows();
 
-  //	const Arg r = {0};
-  //	reset_view(&r);
-
-
   //focus to monitor 0 when started
   Arg arg;
   arg.i = 0;

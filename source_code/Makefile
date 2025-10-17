@@ -45,12 +45,4 @@ clean:
 	rm -f *.o
 
 
-install: all
-	pkill pwindow_manager
-	cp pwindow_manager /usr/bin
-	pwindow_manager &
-
-uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/pwindow_manager
-
 .PHONY: all clean dist install uninstall
