@@ -203,16 +203,18 @@ void drw_setscheme(Draw *drw, Color *scm) {
     drw->scheme = scm;
 }
 
-void drw_rect(Draw *drw, int x, int y, unsigned int w, unsigned int h,
-              int filled, int invert) {
+void draw_rectangle(Draw *drw, int x, int y, unsigned int width,
+                    unsigned int height, int filled, int invert) {
   if (!drw || !drw->scheme)
     return;
+
   XSetForeground(drw->dpy, drw->gc,
                  invert ? drw->scheme[ColBg].pixel : drw->scheme[ColFg].pixel);
   if (filled)
-    XFillRectangle(drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+    XFillRectangle(drw->dpy, drw->drawable, drw->gc, x, y, width, height);
   else
-    XDrawRectangle(drw->dpy, drw->drawable, drw->gc, x, y, w - 1, h - 1);
+    XDrawRectangle(drw->dpy, drw->drawable, drw->gc, x, y, width - 1,
+                   height - 1);
 }
 
 int drw_text(Draw *drw, int x, int y, unsigned int w, unsigned int h,

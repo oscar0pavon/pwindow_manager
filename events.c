@@ -4,6 +4,9 @@
 #include "windows.h"
 #include <X11/Xatom.h>
 
+#include "bar.h"
+
+
 void clientmessage(XEvent *e) {
   XClientMessageEvent *cme = &e->xclient;
   Client *c = get_client_from_window(cme->window);

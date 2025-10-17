@@ -14,7 +14,6 @@
 #define WIDTH(X)                ((X)->w + 2 * (X)->border_width)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->border_width)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-#define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 
 #define MAX(A, B)               ((A) > (B) ? (A) : (B))
 #define MIN(A, B)               ((A) < (B) ? (A) : (B))

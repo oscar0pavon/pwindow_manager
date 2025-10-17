@@ -6,6 +6,10 @@
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 
+#include "bar.h"
+
+#define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
+
 typedef struct {
   Cursor cursor;
 } Cur;
@@ -62,8 +66,9 @@ void drw_setfontset(Draw *drw, Fnt *set);
 void drw_setscheme(Draw *drw, Color *scm);
 
 /* Drawing functions */
-void drw_rect(Draw *drw, int x, int y, unsigned int w, unsigned int h,
+void draw_rectangle(Draw *drw, int x, int y, unsigned int width, unsigned int height,
               int filled, int invert);
+
 int drw_text(Draw *drw, int x, int y, unsigned int w, unsigned int h,
              unsigned int lpad, const char *text, int invert);
 

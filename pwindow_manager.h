@@ -130,8 +130,6 @@ void reset_view(const Arg *arg);
 /* variables */
 extern int screen;
 extern int display_width, display_height;           /* X display screen geometry width, height */
-extern int bar_height;               /* bar height */
-extern int lrpad;            /* sum of left and right padding for text */
 
 extern char stext[256];
 
