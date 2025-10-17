@@ -11,7 +11,7 @@
 
 
 extern Atom wmatom[WMLast], netatom[NetLast];
-extern Display *dpy;
+extern Display *display;
 extern Window root, wmcheckwin;
 extern Color **scheme;
 
@@ -21,7 +21,7 @@ int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
 void arrange(Monitor *m);
 void arrangemon(Monitor *m);
 
-void buttonpress(XEvent *e);
+void mouse_button_press(XEvent *e);
 void checkotherwm(void);
 void cleanup(void);
 void cleanupmon(Monitor *mon);
@@ -117,7 +117,7 @@ void updatetitle(Client *c);
 void updatewindowtype(Client *c);
 void updatewmhints(Client *c);
 void view(const Arg *arg);
-Client *wintoclient(Window w);
+Client *get_client_from_window(Window w);
 Monitor *wintomon(Window w);
 int xerror(Display *dpy, XErrorEvent *ee);
 int xerrordummy(Display *dpy, XErrorEvent *ee);

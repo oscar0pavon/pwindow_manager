@@ -11,7 +11,7 @@
 
 Cur *cursor[CurLast];
 
-void (*handler[LASTEvent])(XEvent *) = {[ButtonPress] = buttonpress,
+void (*handler[LASTEvent])(XEvent *) = {[ButtonPress] = mouse_button_press,
                                         [ClientMessage] = clientmessage,
                                         [ConfigureRequest] = configurerequest,
                                         [ConfigureNotify] = configurenotify,
@@ -26,47 +26,49 @@ void (*handler[LASTEvent])(XEvent *) = {[ButtonPress] = buttonpress,
                                         [PropertyNotify] = propertynotify,
                                         [UnmapNotify] = unmapnotify};
 
-void buttonpress(XEvent *e) {
+void mouse_button_press(XEvent *event) {
   unsigned int i, x, click;
   Arg arg = {0};
-  Client *c;
-  Monitor *m;
-  XButtonPressedEvent *ev = &e->xbutton;
+  Client *client;
+  Monitor *monitor;
+  XButtonPressedEvent *buttons_pressed_event = &event->xbutton;
 
   click = ClkRootWin;
   /* focus monitor if necessary */
-  if ((m = wintomon(ev->window)) && m != selected_monitor) {
+  if ((monitor = wintomon(buttons_pressed_event->window)) &&
+      monitor != selected_monitor) {
     unfocus(selected_monitor->sel, 1);
-    selected_monitor = m;
+    selected_monitor = monitor;
     focus(NULL);
   }
-  if (ev->window == selected_monitor->barwin) {
+  if (buttons_pressed_event->window == selected_monitor->barwin) {
     i = x = 0;
     do
       x += TEXTW(tags[i]);
-    while (ev->x >= x && ++i < LENGTH(tags));
+    while (buttons_pressed_event->x >= x && ++i < LENGTH(tags));
     if (i < LENGTH(tags)) {
       click = ClkTagBar;
       arg.ui = 1 << i;
-    } else if (ev->x < x + TEXTW(selected_monitor->ltsymbol))
+    } else if (buttons_pressed_event->x < x + TEXTW(selected_monitor->ltsymbol))
       click = ClkLtSymbol;
-    else if (ev->x < x + TEXTW(selected_monitor->ltsymbol) +
-                         TEXTW(selected_monitor->monmark))
+    else if (buttons_pressed_event->x < x + TEXTW(selected_monitor->ltsymbol) +
+                                            TEXTW(selected_monitor->monmark))
       click = ClkMonNum;
-    else if (ev->x > selected_monitor->window_area_width - (int)TEXTW(stext))
+    else if (buttons_pressed_event->x >
+             selected_monitor->window_area_width - (int)TEXTW(stext))
       click = ClkStatusText;
     else
       click = ClkWinTitle;
-  } else if ((c = wintoclient(ev->window))) {
-    focus(c);
+  } else if ((client = get_client_from_window(buttons_pressed_event->window))) {
+    focus(client);
     restack(selected_monitor);
-    XAllowEvents(dpy, ReplayPointer, CurrentTime);
+    XAllowEvents(display, ReplayPointer, CurrentTime);
     click = ClkClientWin;
   }
   for (i = 0; i < LENGTH(buttons); i++)
     if (click == buttons[i].click && buttons[i].func &&
-        buttons[i].button == ev->button &&
-        CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state))
+        buttons[i].button == buttons_pressed_event->button &&
+        CLEANMASK(buttons[i].mask) == CLEANMASK(buttons_pressed_event->state))
       buttons[i].func(
           click == ClkTagBar && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
 }
@@ -77,7 +79,7 @@ void keypress(XEvent *e) {
   XKeyEvent *ev;
 
   ev = &e->xkey;
-  keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
+  keysym = XKeycodeToKeysym(display, (KeyCode)ev->keycode, 0);
   for (i = 0; i < LENGTH(keys); i++)
     if (keysym == keys[i].keysym &&
         CLEANMASK(keys[i].mod) == CLEANMASK(ev->state) && keys[i].func)
@@ -98,13 +100,15 @@ void movemouse(const Arg *arg) {
   restack(selected_monitor);
   ocx = c->x;
   ocy = c->y;
-  if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
-                   None, cursor[CurMove]->cursor, CurrentTime) != GrabSuccess)
+  if (XGrabPointer(display, root, False, MOUSEMASK, GrabModeAsync,
+                   GrabModeAsync, None, cursor[CurMove]->cursor,
+                   CurrentTime) != GrabSuccess)
     return;
   if (!getrootptr(&x, &y))
     return;
   do {
-    XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
+    XMaskEvent(display, MOUSEMASK | ExposureMask | SubstructureRedirectMask,
+               &ev);
     switch (ev.type) {
     case ConfigureRequest:
     case Expose:
@@ -142,7 +146,7 @@ void movemouse(const Arg *arg) {
       break;
     }
   } while (ev.type != ButtonRelease);
-  XUngrabPointer(dpy, CurrentTime);
+  XUngrabPointer(display, CurrentTime);
   if ((m = recttomon(c->x, c->y, c->w, c->h)) != selected_monitor) {
     sendmon(c, m);
     selected_monitor = m;
@@ -164,13 +168,15 @@ void resizemouse(const Arg *arg) {
   restack(selected_monitor);
   ocx = c->x;
   ocy = c->y;
-  if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
-                   None, cursor[CurResize]->cursor, CurrentTime) != GrabSuccess)
+  if (XGrabPointer(display, root, False, MOUSEMASK, GrabModeAsync,
+                   GrabModeAsync, None, cursor[CurResize]->cursor,
+                   CurrentTime) != GrabSuccess)
     return;
-  XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->border_width - 1,
+  XWarpPointer(display, None, c->win, 0, 0, 0, 0, c->w + c->border_width - 1,
                c->h + c->border_width - 1);
   do {
-    XMaskEvent(dpy, MOUSEMASK | ExposureMask | SubstructureRedirectMask, &ev);
+    XMaskEvent(display, MOUSEMASK | ExposureMask | SubstructureRedirectMask,
+               &ev);
     switch (ev.type) {
     case ConfigureRequest:
     case Expose:
@@ -203,10 +209,10 @@ void resizemouse(const Arg *arg) {
       break;
     }
   } while (ev.type != ButtonRelease);
-  XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->border_width - 1,
+  XWarpPointer(display, None, c->win, 0, 0, 0, 0, c->w + c->border_width - 1,
                c->h + c->border_width - 1);
-  XUngrabPointer(dpy, CurrentTime);
-  while (XCheckMaskEvent(dpy, EnterWindowMask, &ev))
+  XUngrabPointer(display, CurrentTime);
+  while (XCheckMaskEvent(display, EnterWindowMask, &ev))
     ;
   if ((m = recttomon(c->x, c->y, c->w, c->h)) != selected_monitor) {
     sendmon(c, m);
@@ -224,9 +230,9 @@ void grabkeys(void) {
     int start, end, skip;
     KeySym *syms;
 
-    XUngrabKey(dpy, AnyKey, AnyModifier, root);
-    XDisplayKeycodes(dpy, &start, &end);
-    syms = XGetKeyboardMapping(dpy, start, end - start + 1, &skip);
+    XUngrabKey(display, AnyKey, AnyModifier, root);
+    XDisplayKeycodes(display, &start, &end);
+    syms = XGetKeyboardMapping(display, start, end - start + 1, &skip);
     if (!syms)
       return;
     for (k = start; k <= end; k++)
@@ -234,7 +240,7 @@ void grabkeys(void) {
         /* skip modifier codes, we do that ourselves */
         if (keys[i].keysym == syms[(k - start) * skip])
           for (j = 0; j < LENGTH(modifiers); j++)
-            XGrabKey(dpy, k, keys[i].mod | modifiers[j], root, True,
+            XGrabKey(display, k, keys[i].mod | modifiers[j], root, True,
                      GrabModeAsync, GrabModeAsync);
     XFree(syms);
   }
@@ -246,15 +252,15 @@ void grabbuttons(Client *c, int focused) {
     unsigned int i, j;
     unsigned int modifiers[] = {0, LockMask, numlockmask,
                                 numlockmask | LockMask};
-    XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
+    XUngrabButton(display, AnyButton, AnyModifier, c->win);
     if (!focused)
-      XGrabButton(dpy, AnyButton, AnyModifier, c->win, False, BUTTONMASK,
+      XGrabButton(display, AnyButton, AnyModifier, c->win, False, BUTTONMASK,
                   GrabModeSync, GrabModeSync, None, None);
     for (i = 0; i < LENGTH(buttons); i++)
       if (buttons[i].click == ClkClientWin)
         for (j = 0; j < LENGTH(modifiers); j++)
-          XGrabButton(dpy, buttons[i].button, buttons[i].mask | modifiers[j],
-                      c->win, False, BUTTONMASK, GrabModeAsync, GrabModeSync,
-                      None, None);
+          XGrabButton(display, buttons[i].button,
+                      buttons[i].mask | modifiers[j], c->win, False, BUTTONMASK,
+                      GrabModeAsync, GrabModeSync, None, None);
   }
 }

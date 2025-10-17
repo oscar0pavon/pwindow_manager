@@ -18,18 +18,18 @@ void restack(Monitor *m) {
   if (!m->sel)
     return;
   if (m->sel->isfloating || !m->lt[m->sellt]->arrange)
-    XRaiseWindow(dpy, m->sel->win);
+    XRaiseWindow(display, m->sel->win);
   if (m->lt[m->sellt]->arrange) {
     wc.stack_mode = Below;
     wc.sibling = m->barwin;
     for (c = m->stack; c; c = c->snext)
       if (!c->isfloating && ISVISIBLE(c)) {
-        XConfigureWindow(dpy, c->win, CWSibling | CWStackMode, &wc);
+        XConfigureWindow(display, c->win, CWSibling | CWStackMode, &wc);
         wc.sibling = c->win;
       }
   }
-  XSync(dpy, False);
-  while (XCheckMaskEvent(dpy, EnterWindowMask, &ev))
+  XSync(display, False);
+  while (XCheckMaskEvent(display, EnterWindowMask, &ev))
     ;
 }
 
@@ -133,11 +133,11 @@ int isuniquegeom(XineramaScreenInfo *unique, size_t n,
 int updategeom(void) {
   int dirty = 0;
 
-  if (XineramaIsActive(dpy)) {
+  if (XineramaIsActive(display)) {
     int i, j, n, nn;
     Client *c;
     Monitor *m;
-    XineramaScreenInfo *info = XineramaQueryScreens(dpy, &nn);
+    XineramaScreenInfo *info = XineramaQueryScreens(display, &nn);
     XineramaScreenInfo *unique = NULL;
 
     for (n = 0, m = monitors; m; m = m->next, n++)
@@ -219,7 +219,7 @@ Monitor *wintomon(Window w)
 	for (m = monitors; m; m = m->next)
 		if (w == m->barwin)
 			return m;
-	if ((c = wintoclient(w)))
+	if ((c = get_client_from_window(w)))
 		return c->mon;
 	return selected_monitor;
 }

@@ -6,7 +6,7 @@
 
 void clientmessage(XEvent *e) {
   XClientMessageEvent *cme = &e->xclient;
-  Client *c = wintoclient(cme->window);
+  Client *c = get_client_from_window(cme->window);
 
   if (!c)
     return;
@@ -26,7 +26,7 @@ void configure(Client *c) {
   XConfigureEvent ce;
 
   ce.type = ConfigureNotify;
-  ce.display = dpy;
+  ce.display = display;
   ce.event = c->win;
   ce.window = c->win;
   ce.x = c->x;
@@ -36,7 +36,7 @@ void configure(Client *c) {
   ce.border_width = c->border_width;
   ce.above = None;
   ce.override_redirect = False;
-  XSendEvent(dpy, c->win, False, StructureNotifyMask, (XEvent *)&ce);
+  XSendEvent(display, c->win, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
 void configurenotify(XEvent *e) {
@@ -58,7 +58,7 @@ void configurenotify(XEvent *e) {
           if (c->isfullscreen)
             resizeclient(c, m->screen_x, m->screen_y, m->screen_width,
                          m->screen_height);
-        XMoveResizeWindow(dpy, m->barwin, m->window_area_x, m->bar_geometry,
+        XMoveResizeWindow(display, m->barwin, m->window_area_x, m->bar_geometry,
                           m->window_area_width, bar_height);
       }
       focus(NULL);
@@ -73,7 +73,7 @@ void configurerequest(XEvent *e) {
   XConfigureRequestEvent *ev = &e->xconfigurerequest;
   XWindowChanges wc;
 
-  if ((c = wintoclient(ev->window))) {
+  if ((c = get_client_from_window(ev->window))) {
     if (ev->value_mask & CWBorderWidth)
       c->border_width = ev->border_width;
     else if (c->isfloating ||
@@ -105,7 +105,7 @@ void configurerequest(XEvent *e) {
           !(ev->value_mask & (CWWidth | CWHeight)))
         configure(c);
       if (ISVISIBLE(c))
-        XMoveResizeWindow(dpy, c->win, c->x, c->y, c->w, c->h);
+        XMoveResizeWindow(display, c->win, c->x, c->y, c->w, c->h);
     } else
       configure(c);
   } else {
@@ -116,16 +116,16 @@ void configurerequest(XEvent *e) {
     wc.border_width = ev->border_width;
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
-    XConfigureWindow(dpy, ev->window, ev->value_mask, &wc);
+    XConfigureWindow(display, ev->window, ev->value_mask, &wc);
   }
-  XSync(dpy, False);
+  XSync(display, False);
 }
 
 void destroynotify(XEvent *e) {
   Client *c;
   XDestroyWindowEvent *ev = &e->xdestroywindow;
 
-  if ((c = wintoclient(ev->window)))
+  if ((c = get_client_from_window(ev->window)))
     unmanage(c, 1);
 }
 
@@ -137,7 +137,7 @@ void enternotify(XEvent *e) {
   if ((ev->mode != NotifyNormal || ev->detail == NotifyInferior) &&
       ev->window != root)
     return;
-  c = wintoclient(ev->window);
+  c = get_client_from_window(ev->window);
   m = c ? c->mon : wintomon(ev->window);
   if (m != selected_monitor) {
     unfocus(selected_monitor->sel, 1);
@@ -175,9 +175,9 @@ void maprequest(XEvent *e) {
   static XWindowAttributes wa;
   XMapRequestEvent *ev = &e->xmaprequest;
 
-  if (!XGetWindowAttributes(dpy, ev->window, &wa) || wa.override_redirect)
+  if (!XGetWindowAttributes(display, ev->window, &wa) || wa.override_redirect)
     return;
-  if (!wintoclient(ev->window))
+  if (!get_client_from_window(ev->window))
     manage(ev->window, &wa);
 }
 
@@ -205,13 +205,13 @@ void propertynotify(XEvent *e) {
     updatestatus();
   else if (ev->state == PropertyDelete)
     return; /* ignore */
-  else if ((c = wintoclient(ev->window))) {
+  else if ((c = get_client_from_window(ev->window))) {
     switch (ev->atom) {
     default:
       break;
     case XA_WM_TRANSIENT_FOR:
-      if (!c->isfloating && (XGetTransientForHint(dpy, c->win, &trans)) &&
-          (c->isfloating = (wintoclient(trans)) != NULL))
+      if (!c->isfloating && (XGetTransientForHint(display, c->win, &trans)) &&
+          (c->isfloating = (get_client_from_window(trans)) != NULL))
         arrange(c->mon);
       break;
     case XA_WM_NORMAL_HINTS:
@@ -238,7 +238,7 @@ int sendevent(Client *c, Atom proto) {
   int exists = 0;
   XEvent ev;
 
-  if (XGetWMProtocols(dpy, c->win, &protocols, &n)) {
+  if (XGetWMProtocols(display, c->win, &protocols, &n)) {
     while (!exists && n--)
       exists = protocols[n] == proto;
     XFree(protocols);
@@ -250,7 +250,7 @@ int sendevent(Client *c, Atom proto) {
     ev.xclient.format = 32;
     ev.xclient.data.l[0] = proto;
     ev.xclient.data.l[1] = CurrentTime;
-    XSendEvent(dpy, c->win, False, NoEventMask, &ev);
+    XSendEvent(display, c->win, False, NoEventMask, &ev);
   }
   return exists;
 }

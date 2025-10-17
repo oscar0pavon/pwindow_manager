@@ -13,7 +13,7 @@ void showhide(Client *c) {
     return;
   if (ISVISIBLE(c)) {
     /* show clients top down */
-    XMoveWindow(dpy, c->win, c->x, c->y);
+    XMoveWindow(display, c->win, c->x, c->y);
     if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) &&
         !c->isfullscreen)
       resize(c, c->x, c->y, c->w, c->h, 0);
@@ -21,7 +21,7 @@ void showhide(Client *c) {
   } else {
     /* hide clients bottom up */
     showhide(c->snext);
-    XMoveWindow(dpy, c->win, WIDTH(c) * -2, c->y);
+    XMoveWindow(display, c->win, WIDTH(c) * -2, c->y);
   }
 }
 
@@ -39,11 +39,11 @@ void focus(Client *c) {
     detachstack(c);
     attachstack(c);
     grabbuttons(c, 1);
-    XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
+    XSetWindowBorder(display, c->win, scheme[SchemeSel][ColBorder].pixel);
     setfocus(c);
   } else {
-    XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
-    XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+    XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
+    XDeleteProperty(display, root, netatom[NetActiveWindow]);
   }
   selected_monitor->sel = c;
   drawbars();
@@ -83,8 +83,8 @@ void attachstack(Client *c) {
 
 void setfocus(Client *c) {
   if (!c->neverfocus) {
-    XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
-    XChangeProperty(dpy, root, netatom[NetActiveWindow], XA_WINDOW, 32,
+    XSetInputFocus(display, c->win, RevertToPointerRoot, CurrentTime);
+    XChangeProperty(display, root, netatom[NetActiveWindow], XA_WINDOW, 32,
                     PropModeReplace, (unsigned char *)&(c->win), 1);
   }
   sendevent(c, wmatom[WMTakeFocus]);
@@ -92,7 +92,7 @@ void setfocus(Client *c) {
 
 void setfullscreen(Client *c, int fullscreen) {
   if (fullscreen && !c->isfullscreen) {
-    XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
+    XChangeProperty(display, c->win, netatom[NetWMState], XA_ATOM, 32,
                     PropModeReplace, (unsigned char *)&netatom[NetWMFullscreen],
                     1);
     c->isfullscreen = 1;
@@ -102,9 +102,9 @@ void setfullscreen(Client *c, int fullscreen) {
     c->isfloating = 1;
     resizeclient(c, c->mon->screen_x, c->mon->screen_y, c->mon->screen_width,
                  c->mon->screen_height);
-    XRaiseWindow(dpy, c->win);
+    XRaiseWindow(display, c->win);
   } else if (!fullscreen && c->isfullscreen) {
-    XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
+    XChangeProperty(display, c->win, netatom[NetWMState], XA_ATOM, 32,
                     PropModeReplace, (unsigned char *)0, 0);
     c->isfullscreen = 0;
     c->isfloating = c->oldstate;
@@ -132,7 +132,7 @@ long getstate(Window w) {
   unsigned long n, extra;
   Atom real;
 
-  if (XGetWindowProperty(dpy, w, wmatom[WMState], 0L, 2L, False,
+  if (XGetWindowProperty(display, w, wmatom[WMState], 0L, 2L, False,
                          wmatom[WMState], &real, &format, &n, &extra,
                          (unsigned char **)&p) != Success)
     return -1;
@@ -157,7 +157,7 @@ void manage(Window w, XWindowAttributes *wa) {
   c->oldbw = wa->border_width;
 
   updatetitle(c);
-  if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
+  if (XGetTransientForHint(display, w, &trans) && (t = get_client_from_window(trans))) {
     c->mon = t->mon;
     c->tags = t->tags;
   } else {
@@ -174,32 +174,32 @@ void manage(Window w, XWindowAttributes *wa) {
   c->border_width = borderpx;
 
   wc.border_width = c->border_width;
-  XConfigureWindow(dpy, w, CWBorderWidth, &wc);
-  XSetWindowBorder(dpy, w, scheme[SchemeNorm][ColBorder].pixel);
+  XConfigureWindow(display, w, CWBorderWidth, &wc);
+  XSetWindowBorder(display, w, scheme[SchemeNorm][ColBorder].pixel);
   configure(c); /* propagates border_width, if size doesn't change */
   updatewindowtype(c);
   updatesizehints(c);
   updatewmhints(c);
-  XSelectInput(dpy, w,
+  XSelectInput(display, w,
                EnterWindowMask | FocusChangeMask | PropertyChangeMask |
                    StructureNotifyMask);
   grabbuttons(c, 0);
   if (!c->isfloating)
     c->isfloating = c->oldstate = trans != None || c->isfixed;
   if (c->isfloating)
-    XRaiseWindow(dpy, c->win);
+    XRaiseWindow(display, c->win);
   attach(c);
   attachstack(c);
-  XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+  XChangeProperty(display, root, netatom[NetClientList], XA_WINDOW, 32,
                   PropModeAppend, (unsigned char *)&(c->win), 1);
-  XMoveResizeWindow(dpy, c->win, c->x + 2 * display_width, c->y, c->w,
+  XMoveResizeWindow(display, c->win, c->x + 2 * display_width, c->y, c->w,
                     c->h); /* some windows require this */
   setclientstate(c, NormalState);
   if (c->mon == selected_monitor)
     unfocus(selected_monitor->sel, 0);
   c->mon->sel = c;
   arrange(c->mon);
-  XMapWindow(dpy, c->win);
+  XMapWindow(display, c->win);
   focus(NULL);
 }
 
@@ -220,10 +220,10 @@ void resizeclient(Client *c, int x, int y, int w, int h) {
   c->oldh = c->h;
   c->h = wc.height = h;
   wc.border_width = c->border_width;
-  XConfigureWindow(dpy, c->win, CWX | CWY | CWWidth | CWHeight | CWBorderWidth,
+  XConfigureWindow(display, c->win, CWX | CWY | CWWidth | CWHeight | CWBorderWidth,
                    &wc);
   configure(c);
-  XSync(dpy, False);
+  XSync(display, False);
 }
 
 void window_to_monitor(const Arg *arg) {
@@ -298,10 +298,10 @@ void unfocus(Client *c, int setfocus) {
   if (!c)
     return;
   grabbuttons(c, 0);
-  XSetWindowBorder(dpy, c->win, scheme[SchemeNorm][ColBorder].pixel);
+  XSetWindowBorder(display, c->win, scheme[SchemeNorm][ColBorder].pixel);
   if (setfocus) {
-    XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
-    XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+    XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
+    XDeleteProperty(display, root, netatom[NetActiveWindow]);
   }
 }
 
@@ -320,7 +320,7 @@ void togglefloating(const Arg *arg) {
   arrange(selected_monitor);
 }
 
-Client *wintoclient(Window w) {
+Client *get_client_from_window(Window w) {
   Client *c;
   Monitor *m;
 
