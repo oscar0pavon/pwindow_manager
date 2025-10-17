@@ -6,8 +6,66 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xinerama.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 #include "config.h"
+
+#include <pthread.h>
+#include <unistd.h>
+
+Window hightlight_window;
+
+
+void* show_higthligth_window(void* in_monitor){
+  Monitor* monitor = (Monitor*)in_monitor;
+  
+  XSetWindowAttributes wa = {.override_redirect = True,
+                             .background_pixmap = ParentRelative,
+                             .event_mask = ExposureMask};
+
+  XClassHint class_hint = {"pwindow_manager", "pwindow_manager"};
+
+
+  hightlight_window =
+        XCreateWindow(display, root, monitor->screen_x,
+                      monitor->screen_y, monitor->screen_width,
+                      monitor->screen_height, 0, DefaultDepth(display, screen),
+                      CopyFromParent, DefaultVisual(display, screen),
+                      CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+
+  XMapRaised(display, hightlight_window);
+  XSetClassHint(display, hightlight_window, &class_hint);
+
+
+
+  draw_rectangle(drw,monitor->window_area_x,monitor->window_area_y,
+        monitor->screen_width, monitor->screen_height, 1 , 0);
+
+  printf("monitor window area: %i %i\n",monitor->window_area_x,monitor->window_area_y);
+  printf("monitor screen : %i %i\n",monitor->screen_x,monitor->screen_y);
+
+
+  drw_map(drw, hightlight_window, monitor->screen_x, monitor->screen_y, monitor->screen_width, monitor->screen_height);
+
+
+  sleep(1);
+
+  XDestroyWindow(display,hightlight_window);
+
+
+
+  return NULL;
+}
+
+void hightlight_focused_monitor(Monitor* monitor){
+
+  pthread_t thread_id;
+
+
+  pthread_create(&thread_id,NULL,show_higthligth_window, monitor);
+
+
+}
 
 void restack(Monitor *m) {
   Client *c;
@@ -42,6 +100,9 @@ void focus_monitor(const Arg *arg) {
     return;
   unfocus(selected_monitor->selected_client, 0);
   selected_monitor = m;
+
+  hightlight_focused_monitor(selected_monitor);
+
   focus(NULL);
 }
 

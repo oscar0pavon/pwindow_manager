@@ -45,8 +45,8 @@ void draw_bar(Monitor *monitor) {
     
     // draw_rectangle(drw,monitor->screen_x,monitor->screen_y,
     //     monitor->screen_width, monitor->screen_height, 1 , 0);
-    draw_rectangle(drw,50,50,
-        monitor->screen_width, monitor->screen_height, 1 , 0);
+    // draw_rectangle(drw,50,50,
+    //     monitor->screen_width, monitor->screen_height, 1 , 0);
   }
 
   for (client = monitor->clients; client; client = client->next) {

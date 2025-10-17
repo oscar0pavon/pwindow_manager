@@ -18,7 +18,7 @@ FREETYPEINC = /usr/include/freetype2
 
 # includes and libs
 INCS = -I${X11INC} -I${FREETYPEINC}
-LIBS = -L${X11LIB} -lX11 -lXinerama ${FREETYPELIBS}
+LIBS = -L${X11LIB} -lX11 -lXinerama ${FREETYPELIBS} -lpthread
 
 # flags
 DEFINES = -D_XOPEN_SOURCE=700L
