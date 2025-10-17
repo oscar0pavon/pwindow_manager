@@ -3,6 +3,7 @@
 #include "pwindow_manager.h"
 #include "config.h"
 #include "input.h"
+#include <stdio.h>
 
 int bar_height;                    /* bar height */
 int lrpad;                         /* sum of left and right padding for text */
@@ -112,7 +113,7 @@ void drawbars(void) {
     draw_bar(m);
 }
 
-void update_bars(void) {
+void create_bars(void) {
   Monitor *monitor;
   XSetWindowAttributes wa = {.override_redirect = True,
                              .background_pixmap = ParentRelative,

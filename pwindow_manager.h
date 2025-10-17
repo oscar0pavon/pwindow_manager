@@ -24,7 +24,7 @@ void arrangemon(Monitor *m);
 void mouse_button_press(XEvent *e);
 void checkotherwm(void);
 void cleanup(void);
-void cleanupmon(Monitor *mon);
+void clean_up_monitors(Monitor *mon);
 void configure(Client *c);
 
 
@@ -107,7 +107,7 @@ void nview(const Arg *arg);
 void unmanage(Client *c, int destroyed);
 void unmapnotify(XEvent *e);
 void updatebarpos(Monitor *m);
-void update_bars(void);
+void create_bars(void);
 void updateclientlist(void);
 
 void updatenumlockmask(void);

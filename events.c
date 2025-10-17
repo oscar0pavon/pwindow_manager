@@ -55,7 +55,7 @@ void configurenotify(XEvent *e) {
     display_height = ev->height;
     if (updategeom() || dirty) {
       drw_resize(drw, display_width, bar_height);
-      update_bars();
+      create_bars();
       for (m = monitors; m; m = m->next) {
         for (c = m->clients; c; c = c->next)
           if (c->isfullscreen)

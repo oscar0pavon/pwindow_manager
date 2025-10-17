@@ -295,7 +295,7 @@ void cleanup(void) {
       unmanage(m->stack, 0);
   XUngrabKey(display, AnyKey, AnyModifier, root);
   while (monitors)
-    cleanupmon(monitors);
+    clean_up_monitors(monitors);
   for (i = 0; i < CurLast; i++)
     drw_cur_free(drw, cursor[i]);
   for (i = 0; i < LENGTH(colors); i++)
@@ -308,20 +308,6 @@ void cleanup(void) {
   XDeleteProperty(display, root, netatom[NetActiveWindow]);
 }
 
-void cleanupmon(Monitor *mon) {
-  Monitor *m;
-
-  if (mon == monitors)
-    monitors = monitors->next;
-  else {
-    for (m = monitors; m && m->next != mon; m = m->next)
-      ;
-    m->next = mon->next;
-  }
-  XUnmapWindow(display, mon->bar_window);
-  XDestroyWindow(display, mon->bar_window);
-  free(mon);
-}
 
 
 
@@ -643,7 +629,7 @@ void setup(void) {
   for (i = 0; i < LENGTH(colors); i++)
     color_scheme[i] = drw_scm_create(drw, colors[i], 3);
   /* init bars */
-  update_bars();
+  create_bars();
   updatestatus();
   /* supporting window for NetWMCheck */
   wmcheckwin = XCreateSimpleWindow(display, root, 0, 0, 1, 1, 0, 0, 0);

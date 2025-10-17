@@ -186,7 +186,7 @@ int updategeom(void) {
       }
       if (m == selected_monitor)
         selected_monitor = monitors;
-      cleanupmon(m);
+      clean_up_monitors(m);
     }
     free(unique);
   } else
@@ -253,4 +253,19 @@ Monitor *createmon(void) {
   /* this is actually set in updategeom, to avoid a race condition */
   //	snprintf(m->monmark, sizeof(m->monmark), "(%d)", m->num);
   return m;
+}
+
+void clean_up_monitors(Monitor *mon) {
+  Monitor *m;
+
+  if (mon == monitors)
+    monitors = monitors->next;
+  else {
+    for (m = monitors; m && m->next != mon; m = m->next)
+      ;
+    m->next = mon->next;
+  }
+  XUnmapWindow(display, mon->bar_window);
+  XDestroyWindow(display, mon->bar_window);
+  free(mon);
 }
