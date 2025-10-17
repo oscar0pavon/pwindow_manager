@@ -42,7 +42,7 @@ void set_window_dimention(Client* window, Monitor* monitor, int height, int widt
 void full_screen_floating_window(const Arg* arg);
 void minimal_screen_floating_window(const Arg* arg);
 
-void drawbars(void);
+void draw_bars(void);
 
 void focusstack(const Arg *arg);
 Atom getatomprop(Client *c, Atom prop);

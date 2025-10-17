@@ -199,39 +199,39 @@ void motionnotify(XEvent *e) {
   mon = m;
 }
 
-void propertynotify(XEvent *e) {
-  Client *c;
+void propertynotify(XEvent *event) {
+  Client *client;
   Window trans;
-  XPropertyEvent *ev = &e->xproperty;
+  XPropertyEvent *property_event = &event->xproperty;
 
-  if ((ev->window == root) && (ev->atom == XA_WM_NAME))
+  if ((property_event->window == root) && (property_event->atom == XA_WM_NAME))
     updatestatus();
-  else if (ev->state == PropertyDelete)
+  else if (property_event->state == PropertyDelete)
     return; /* ignore */
-  else if ((c = get_client_from_window(ev->window))) {
-    switch (ev->atom) {
+  else if ((client = get_client_from_window(property_event->window))) {
+    switch (property_event->atom) {
     default:
       break;
     case XA_WM_TRANSIENT_FOR:
-      if (!c->isfloating && (XGetTransientForHint(display, c->win, &trans)) &&
-          (c->isfloating = (get_client_from_window(trans)) != NULL))
-        arrange(c->mon);
+      if (!client->isfloating && (XGetTransientForHint(display, client->win, &trans)) &&
+          (client->isfloating = (get_client_from_window(trans)) != NULL))
+        arrange(client->mon);
       break;
     case XA_WM_NORMAL_HINTS:
-      c->hintsvalid = 0;
+      client->hintsvalid = 0;
       break;
     case XA_WM_HINTS:
-      updatewmhints(c);
-      drawbars();
+      updatewmhints(client);
+      draw_bars();
       break;
     }
-    if (ev->atom == XA_WM_NAME || ev->atom == netatom[NetWMName]) {
-      updatetitle(c);
-      if (c == c->mon->selected_client)
-        draw_bar(c->mon);
+    if (property_event->atom == XA_WM_NAME || property_event->atom == netatom[NetWMName]) {
+      updatetitle(client);
+      if (client == client->mon->selected_client)
+        draw_bar(client->mon);
     }
-    if (ev->atom == netatom[NetWMWindowType])
-      updatewindowtype(c);
+    if (property_event->atom == netatom[NetWMWindowType])
+      updatewindowtype(client);
   }
 }
 

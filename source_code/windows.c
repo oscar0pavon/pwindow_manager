@@ -25,28 +25,43 @@ void showhide(Client *c) {
   }
 }
 
-void focus(Client *c) {
-  if (!c || !ISVISIBLE(c))
-    for (c = selected_monitor->stack; c && !ISVISIBLE(c); c = c->snext)
+void focus(Client *client) {
+ 
+  if (!client || !ISVISIBLE(client)){
+
+    for (client = selected_monitor->stack; client && !ISVISIBLE(client); client = client->snext)
       ;
-  if (selected_monitor->selected_client && selected_monitor->selected_client != c)
+
+  }
+ 
+  if (selected_monitor->selected_client && selected_monitor->selected_client != client)
     unfocus(selected_monitor->selected_client, 0);
-  if (c) {
-    if (c->mon != selected_monitor)
-      selected_monitor = c->mon;
-    if (c->isurgent)
-      seturgent(c, 0);
-    detachstack(c);
-    attachstack(c);
-    grabbuttons(c, 1);
-    XSetWindowBorder(display, c->win, color_scheme[SchemeSelected][ColBorder].pixel);
-    setfocus(c);
+  
+  if (client) {
+  
+    if (client->mon != selected_monitor)
+      selected_monitor = client->mon;
+
+    if (client->isurgent)
+      seturgent(client, 0);
+
+    detachstack(client);
+    attachstack(client);
+    grabbuttons(client, 1);
+
+    XSetWindowBorder(display, client->win, color_scheme[SchemeSelected][ColBorder].pixel);
+
+    setfocus(client);
+
   } else {
+
     XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
     XDeleteProperty(display, root, netatom[NetActiveWindow]);
+
   }
-  selected_monitor->selected_client = c;
-  drawbars();
+
+  selected_monitor->selected_client = client;
+  draw_bars();
 }
 
 void detach(Client *c) {

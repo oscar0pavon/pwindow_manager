@@ -106,11 +106,11 @@ void draw_bar(Monitor *monitor) {
     
 }
 
-void drawbars(void) {
-  Monitor *m;
+void draw_bars(void) {
+  Monitor *monitor;
 
-  for (m = monitors; m; m = m->next)
-    draw_bar(m);
+  for (monitor = monitors; monitor; monitor = monitor->next)
+    draw_bar(monitor);
 }
 
 void create_bars(void) {
