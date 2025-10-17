@@ -29,8 +29,8 @@ void focus(Client *c) {
   if (!c || !ISVISIBLE(c))
     for (c = selected_monitor->stack; c && !ISVISIBLE(c); c = c->snext)
       ;
-  if (selected_monitor->sel && selected_monitor->sel != c)
-    unfocus(selected_monitor->sel, 0);
+  if (selected_monitor->selected_client && selected_monitor->selected_client != c)
+    unfocus(selected_monitor->selected_client, 0);
   if (c) {
     if (c->mon != selected_monitor)
       selected_monitor = c->mon;
@@ -39,13 +39,13 @@ void focus(Client *c) {
     detachstack(c);
     attachstack(c);
     grabbuttons(c, 1);
-    XSetWindowBorder(display, c->win, scheme[SchemeSel][ColBorder].pixel);
+    XSetWindowBorder(display, c->win, color_scheme[SchemeSelected][ColBorder].pixel);
     setfocus(c);
   } else {
     XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
     XDeleteProperty(display, root, netatom[NetActiveWindow]);
   }
-  selected_monitor->sel = c;
+  selected_monitor->selected_client = c;
   drawbars();
 }
 
@@ -64,10 +64,10 @@ void detachstack(Client *c) {
     ;
   *tc = c->snext;
 
-  if (c == c->mon->sel) {
+  if (c == c->mon->selected_client) {
     for (t = c->mon->stack; t && !ISVISIBLE(t); t = t->snext)
       ;
-    c->mon->sel = t;
+    c->mon->selected_client = t;
   }
 }
 
@@ -175,7 +175,7 @@ void manage(Window w, XWindowAttributes *wa) {
 
   wc.border_width = c->border_width;
   XConfigureWindow(display, w, CWBorderWidth, &wc);
-  XSetWindowBorder(display, w, scheme[SchemeNorm][ColBorder].pixel);
+  XSetWindowBorder(display, w, color_scheme[SchemeNormal][ColBorder].pixel);
   configure(c); /* propagates border_width, if size doesn't change */
   updatewindowtype(c);
   updatesizehints(c);
@@ -196,8 +196,8 @@ void manage(Window w, XWindowAttributes *wa) {
                     c->h); /* some windows require this */
   setclientstate(c, NormalState);
   if (c->mon == selected_monitor)
-    unfocus(selected_monitor->sel, 0);
-  c->mon->sel = c;
+    unfocus(selected_monitor->selected_client, 0);
+  c->mon->selected_client = c;
   arrange(c->mon);
   XMapWindow(display, c->win);
   focus(NULL);
@@ -227,17 +227,17 @@ void resizeclient(Client *c, int x, int y, int w, int h) {
 }
 
 void window_to_monitor(const Arg *arg) {
-  if (!selected_monitor->sel || !monitors->next)
+  if (!selected_monitor->selected_client || !monitors->next)
     return;
-  sendmon(selected_monitor->sel, numtomon(arg->i));
+  sendmon(selected_monitor->selected_client, numtomon(arg->i));
 }
 
 void full_screen_floating_window(const Arg *arg) {
-  set_window_dimention(selected_monitor->sel, selected_monitor, 1917, 1077);
+  set_window_dimention(selected_monitor->selected_client, selected_monitor, 1917, 1077);
 }
 
 void minimal_screen_floating_window(const Arg *arg) {
-  set_window_dimention(selected_monitor->sel, selected_monitor, 1280, 720);
+  set_window_dimention(selected_monitor->selected_client, selected_monitor, 1280, 720);
 }
 
 void window_to_monitor_and_focus(const Arg *arg) {
@@ -248,10 +248,10 @@ void window_to_monitor_and_focus(const Arg *arg) {
 
   printf("The monitor number is %i\n", arg->i);
 
-  if (!selected_monitor->sel)
+  if (!selected_monitor->selected_client)
     return;
 
-  Client *window = selected_monitor->sel;
+  Client *window = selected_monitor->selected_client;
 
   if (target_monitor == selected_monitor)
     return;
@@ -268,7 +268,7 @@ void window_to_monitor_and_focus(const Arg *arg) {
 
   focus(window);
 
-  unfocus(selected_monitor->sel, 0);
+  unfocus(selected_monitor->selected_client, 0);
   selected_monitor = target_monitor;
   arrange(monitor);
   arrange(previus_monitor);
@@ -298,7 +298,7 @@ void unfocus(Client *c, int setfocus) {
   if (!c)
     return;
   grabbuttons(c, 0);
-  XSetWindowBorder(display, c->win, scheme[SchemeNorm][ColBorder].pixel);
+  XSetWindowBorder(display, c->win, color_scheme[SchemeNormal][ColBorder].pixel);
   if (setfocus) {
     XSetInputFocus(display, root, RevertToPointerRoot, CurrentTime);
     XDeleteProperty(display, root, netatom[NetActiveWindow]);
@@ -306,17 +306,17 @@ void unfocus(Client *c, int setfocus) {
 }
 
 void togglefloating(const Arg *arg) {
-  if (!selected_monitor->sel)
+  if (!selected_monitor->selected_client)
     return;
-  if (selected_monitor->sel
+  if (selected_monitor->selected_client
           ->isfullscreen) /* no support for fullscreen windows */
     return;
-  selected_monitor->sel->isfloating =
-      !selected_monitor->sel->isfloating || selected_monitor->sel->isfixed;
-  if (selected_monitor->sel->isfloating)
-    resize(selected_monitor->sel, selected_monitor->sel->x,
-           selected_monitor->sel->y, selected_monitor->sel->w,
-           selected_monitor->sel->h, 0);
+  selected_monitor->selected_client->isfloating =
+      !selected_monitor->selected_client->isfloating || selected_monitor->selected_client->isfixed;
+  if (selected_monitor->selected_client->isfloating)
+    resize(selected_monitor->selected_client, selected_monitor->selected_client->x,
+           selected_monitor->selected_client->y, selected_monitor->selected_client->w,
+           selected_monitor->selected_client->h, 0);
   arrange(selected_monitor);
 }
 
@@ -332,7 +332,7 @@ Client *get_client_from_window(Window w) {
 }
 
 void zoom(const Arg *arg) {
-  Client *c = selected_monitor->sel;
+  Client *c = selected_monitor->selected_client;
 
   if (!selected_monitor->lt[selected_monitor->sellt]->arrange || !c ||
       c->isfloating)

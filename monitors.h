@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+typedef struct Monitor Monitor;
+
 struct Monitor {
 	char ltsymbol[16];
 	char monmark[16];
@@ -18,7 +20,7 @@ struct Monitor {
 	int showbar;
 	int topbar;
 	Client *clients;
-	Client *sel;
+	Client *selected_client;
 	Client *stack;
 	Monitor *next;
 	Window barwin;
@@ -30,7 +32,7 @@ Monitor *dirtomon(int dir);
 Monitor *numtomon(int num);
 void focusnthmon(const Arg *arg);
 void tagnthmon(const Arg *arg);
-void drawbar(Monitor *m);
+void draw_bar(Monitor *m);
 
 void sendmon(Client *c, Monitor *m);
 

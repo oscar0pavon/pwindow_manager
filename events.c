@@ -17,7 +17,7 @@ void clientmessage(XEvent *e) {
                         || (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ &&
                             !c->isfullscreen)));
   } else if (cme->message_type == netatom[NetActiveWindow]) {
-    if (c != selected_monitor->sel && !c->isurgent)
+    if (c != selected_monitor->selected_client && !c->isurgent)
       seturgent(c, 1);
   }
 }
@@ -140,9 +140,9 @@ void enternotify(XEvent *e) {
   c = get_client_from_window(ev->window);
   m = c ? c->mon : wintomon(ev->window);
   if (m != selected_monitor) {
-    unfocus(selected_monitor->sel, 1);
+    unfocus(selected_monitor->selected_client, 1);
     selected_monitor = m;
-  } else if (!c || c == selected_monitor->sel)
+  } else if (!c || c == selected_monitor->selected_client)
     return;
   focus(c);
 }
@@ -152,15 +152,15 @@ void expose(XEvent *e) {
   XExposeEvent *ev = &e->xexpose;
 
   if (ev->count == 0 && (m = wintomon(ev->window)))
-    drawbar(m);
+    draw_bar(m);
 }
 
 /* there are some broken focus acquiring clients needing extra handling */
 void focusin(XEvent *e) {
   XFocusChangeEvent *ev = &e->xfocus;
 
-  if (selected_monitor->sel && ev->window != selected_monitor->sel->win)
-    setfocus(selected_monitor->sel);
+  if (selected_monitor->selected_client && ev->window != selected_monitor->selected_client->win)
+    setfocus(selected_monitor->selected_client);
 }
 
 void mappingnotify(XEvent *e) {
@@ -189,7 +189,7 @@ void motionnotify(XEvent *e) {
   if (ev->window != root)
     return;
   if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != mon && mon) {
-    unfocus(selected_monitor->sel, 1);
+    unfocus(selected_monitor->selected_client, 1);
     selected_monitor = m;
     focus(NULL);
   }
@@ -224,8 +224,8 @@ void propertynotify(XEvent *e) {
     }
     if (ev->atom == XA_WM_NAME || ev->atom == netatom[NetWMName]) {
       updatetitle(c);
-      if (c == c->mon->sel)
-        drawbar(c->mon);
+      if (c == c->mon->selected_client)
+        draw_bar(c->mon);
     }
     if (ev->atom == netatom[NetWMWindowType])
       updatewindowtype(c);

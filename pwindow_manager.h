@@ -13,7 +13,7 @@
 extern Atom wmatom[WMLast], netatom[NetLast];
 extern Display *display;
 extern Window root, wmcheckwin;
-extern Color **scheme;
+extern Color **color_scheme;
 
 /* function declarations */
 void applyrules(Client *c);

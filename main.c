@@ -40,6 +40,7 @@
 #include <X11/Xft/Xft.h>
 
 #include "draw.h"
+#include "types.h"
 #include "util.h"
 
 #include "input.h"
@@ -63,7 +64,7 @@ Atom wmatom[WMLast], netatom[NetLast];
 Monitor *monitors, *selected_monitor;
 Display *display;
 Window root, wmcheckwin;
-Color **scheme;
+Color **color_scheme;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -73,7 +74,7 @@ void movetoedge(const Arg *arg) {
   // only floating windows can be moved/
 
   Client *c;
-  c = selected_monitor->sel;
+  c = selected_monitor->selected_client;
   int x, y, nx, ny;
 
   if (!c || !arg)
@@ -109,11 +110,11 @@ void moveresizewebcam(const Arg *arg) {
   XEvent ev;
   Monitor *m = selected_monitor;
 
-  if (!(m->sel && arg && arg->v && m->sel->isfloating))
+  if (!(m->selected_client && arg && arg->v && m->selected_client->isfloating))
     return;
 
-  resize(m->sel, m->sel->x + ((int *)arg->v)[0], m->sel->y + ((int *)arg->v)[1],
-         m->sel->w + ((int *)arg->v)[2], m->sel->h + ((int *)arg->v)[3], True);
+  resize(m->selected_client, m->selected_client->x + ((int *)arg->v)[0], m->selected_client->y + ((int *)arg->v)[1],
+         m->selected_client->w + ((int *)arg->v)[2], m->selected_client->h + ((int *)arg->v)[3], True);
 
   while (XCheckMaskEvent(display, EnterWindowMask, &ev))
     ;
@@ -126,11 +127,11 @@ void moveresize(const Arg *arg) {
   XEvent ev;
   Monitor *m = selected_monitor;
 
-  if (!(m->sel && arg && arg->v && m->sel->isfloating))
+  if (!(m->selected_client && arg && arg->v && m->selected_client->isfloating))
     return;
 
-  resize(m->sel, m->sel->x + ((int *)arg->v)[0], m->sel->y + ((int *)arg->v)[1],
-         m->sel->w + ((int *)arg->v)[2], m->sel->h + ((int *)arg->v)[3], True);
+  resize(m->selected_client, m->selected_client->x + ((int *)arg->v)[0], m->selected_client->y + ((int *)arg->v)[1],
+         m->selected_client->w + ((int *)arg->v)[2], m->selected_client->h + ((int *)arg->v)[3], True);
 
   while (XCheckMaskEvent(display, EnterWindowMask, &ev))
     ;
@@ -299,8 +300,8 @@ void cleanup(void) {
   for (i = 0; i < CurLast; i++)
     drw_cur_free(drw, cursor[i]);
   for (i = 0; i < LENGTH(colors); i++)
-    free(scheme[i]);
-  free(scheme);
+    free(color_scheme[i]);
+  free(color_scheme);
   XDestroyWindow(display, wmcheckwin);
   drw_free(drw);
   XSync(display, False);
@@ -323,69 +324,83 @@ void cleanupmon(Monitor *mon) {
   free(mon);
 }
 
-
-void drawbar(Monitor *m) {
-  int x, w, tw = 0;
-  int boxs = drw->fonts->h / 9;
-  int boxw = drw->fonts->h / 6 + 2;
+void draw_bar(Monitor *monitor) {
+  int x, width, text_width = 0;
+  int box_size = drw->fonts->h / 9;
+  int box_width = drw->fonts->h / 6 + 2;
   unsigned int i, occ = 0, urg = 0;
-  Client *c;
+  Client *client;
 
-  if (!m->showbar)
+  if (!monitor->showbar)
     return;
 
   /* draw status first so it can be overdrawn by tags later */
-  if (m == selected_monitor) { /* status is only drawn on selected monitor */
-    drw_setscheme(drw, scheme[SchemeNorm]);
-    tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
-    drw_text(drw, m->window_area_width - tw, 0, tw, bar_height, 0, stext, 0);
+  /* status is only drawn on selected monitor */
+
+  if (monitor == selected_monitor) {
+
+    drw_setscheme(drw, color_scheme[SchemeNormal]);
+    text_width = TEXTW(stext) - lrpad + 2; /* 2px right padding */
+    drw_text(drw, monitor->window_area_width - text_width, 0, text_width,
+             bar_height, 0, stext, 0);
   }
 
-  for (c = m->clients; c; c = c->next) {
-    occ |= c->tags;
-    if (c->isurgent)
-      urg |= c->tags;
+  for (client = monitor->clients; client; client = client->next) {
+    occ |= client->tags;
+    if (client->isurgent)
+      urg |= client->tags;
   }
   x = 0;
   for (i = 0; i < LENGTH(tags); i++) {
-    w = TEXTW(tags[i]);
-    drw_setscheme(
-        drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-    drw_text(drw, x, 0, w, bar_height, lrpad / 2, tags[i], urg & 1 << i);
+    width = TEXTW(tags[i]);
+    drw_setscheme(drw, color_scheme[monitor->tagset[monitor->seltags] & 1 << i
+                                        ? SchemeSelected
+                                        : SchemeNormal]);
+    drw_text(drw, x, 0, width, bar_height, lrpad / 2, tags[i], urg & 1 << i);
     if (occ & 1 << i)
-      drw_rect(drw, x + boxs, boxs, boxw, boxw,
-               m == selected_monitor && selected_monitor->sel &&
-                   selected_monitor->sel->tags & 1 << i,
+      drw_rect(drw, x + box_size, box_size, box_width, box_width,
+               monitor == selected_monitor &&
+                   selected_monitor->selected_client &&
+                   selected_monitor->selected_client->tags & 1 << i,
                urg & 1 << i);
-    x += w;
+    x += width;
   }
-  w = TEXTW(m->ltsymbol);
-  drw_setscheme(drw, scheme[SchemeNorm]);
-  x = drw_text(drw, x, 0, w, bar_height, lrpad / 2, m->ltsymbol, 0);
-  w = TEXTW(m->monmark);
-  drw_setscheme(drw, scheme[SchemeNorm]);
-  x = drw_text(drw, x, 0, w, bar_height, lrpad / 2, m->monmark, 0);
+  width = TEXTW(monitor->ltsymbol);
+  drw_setscheme(drw, color_scheme[SchemeNormal]);
+  x = drw_text(drw, x, 0, width, bar_height, lrpad / 2, monitor->ltsymbol, 0);
+  width = TEXTW(monitor->monmark);
+  drw_setscheme(drw, color_scheme[SchemeNormal]);
+  x = drw_text(drw, x, 0, width, bar_height, lrpad / 2, monitor->monmark, 0);
 
-  if ((w = m->window_area_width - tw - x) > bar_height) {
-    if (m->sel) {
+  if ((width = monitor->window_area_width - text_width - x) > bar_height) {
+    if (monitor->selected_client) {
       drw_setscheme(drw,
-                    scheme[m == selected_monitor ? SchemeSel : SchemeNorm]);
-      drw_text(drw, x, 0, w, bar_height, lrpad / 2, m->sel->name, 0);
-      if (m->sel->isfloating)
-        drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
+                    color_scheme[monitor == selected_monitor ? SchemeSelected
+                                                             : SchemeNormal]);
+
+      // draw window name
+      drw_text(drw, x, 0, width, bar_height, lrpad / 2,
+               monitor->selected_client->name, 0);
+
+      // draw a little squad in the side of the window name
+      if (monitor->selected_client->isfloating) {
+        drw_rect(drw, x + box_size, box_size, box_width, box_width,
+                 monitor->selected_client->isfixed, 0);
+      }
+
     } else {
-      drw_setscheme(drw, scheme[SchemeNorm]);
-      drw_rect(drw, x, 0, w, bar_height, 1, 1);
+      drw_setscheme(drw, color_scheme[SchemeNormal]);
+      drw_rect(drw, x, 0, width, bar_height, 1, 1);
     }
   }
-  drw_map(drw, m->barwin, 0, 0, m->window_area_width, bar_height);
+  drw_map(drw, monitor->barwin, 0, 0, monitor->window_area_width, bar_height);
 }
 
 void drawbars(void) {
   Monitor *m;
 
   for (m = monitors; m; m = m->next)
-    drawbar(m);
+    draw_bar(m);
 }
 
 
@@ -393,17 +408,17 @@ void drawbars(void) {
 void focusstack(const Arg *arg) {
   Client *c = NULL, *i;
 
-  if (!selected_monitor->sel ||
-      (selected_monitor->sel->isfullscreen && lockfullscreen))
+  if (!selected_monitor->selected_client ||
+      (selected_monitor->selected_client->isfullscreen && lockfullscreen))
     return;
   if (arg->i > 0) {
-    for (c = selected_monitor->sel->next; c && !ISVISIBLE(c); c = c->next)
+    for (c = selected_monitor->selected_client->next; c && !ISVISIBLE(c); c = c->next)
       ;
     if (!c)
       for (c = selected_monitor->clients; c && !ISVISIBLE(c); c = c->next)
         ;
   } else {
-    for (i = selected_monitor->clients; i != selected_monitor->sel; i = i->next)
+    for (i = selected_monitor->clients; i != selected_monitor->selected_client; i = i->next)
       if (ISVISIBLE(i))
         c = i;
     if (!c)
@@ -469,13 +484,13 @@ void incnmaster(const Arg *arg) {
 }
 
 void killclient(const Arg *arg) {
-  if (!selected_monitor->sel)
+  if (!selected_monitor->selected_client)
     return;
-  if (!sendevent(selected_monitor->sel, wmatom[WMDelete])) {
+  if (!sendevent(selected_monitor->selected_client, wmatom[WMDelete])) {
     XGrabServer(display);
     XSetErrorHandler(xerrordummy);
     XSetCloseDownMode(display, DestroyAll);
-    XKillClient(display, selected_monitor->sel->win);
+    XKillClient(display, selected_monitor->selected_client->win);
     XSync(display, False);
     XSetErrorHandler(xerror);
     XUngrabServer(display);
@@ -538,7 +553,7 @@ void quit(const Arg *arg) {
 
 
 void pushdown(const Arg *arg) {
-  Client *sel = selected_monitor->sel, *c;
+  Client *sel = selected_monitor->selected_client, *c;
 
   if (!sel || sel->isfloating)
     return;
@@ -555,7 +570,7 @@ void pushdown(const Arg *arg) {
 }
 
 void pushup(const Arg *arg) {
-  Client *sel = selected_monitor->sel, *c;
+  Client *sel = selected_monitor->selected_client, *c;
 
   if (!sel || sel->isfloating)
     return;
@@ -622,10 +637,10 @@ void setlayout(const Arg *arg) {
   strncpy(selected_monitor->ltsymbol,
           selected_monitor->lt[selected_monitor->sellt]->symbol,
           sizeof selected_monitor->ltsymbol);
-  if (selected_monitor->sel)
+  if (selected_monitor->selected_client)
     arrange(selected_monitor);
   else
-    drawbar(selected_monitor);
+    draw_bar(selected_monitor);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -703,9 +718,9 @@ void setup(void) {
   cursor[CurResize] = drw_cur_create(drw, XC_sizing);
   cursor[CurMove] = drw_cur_create(drw, XC_fleur);
   /* init appearance */
-  scheme = ecalloc(LENGTH(colors), sizeof(Color *));
+  color_scheme = ecalloc(LENGTH(colors), sizeof(Color *));
   for (i = 0; i < LENGTH(colors); i++)
-    scheme[i] = drw_scm_create(drw, colors[i], 3);
+    color_scheme[i] = drw_scm_create(drw, colors[i], 3);
   /* init bars */
   updatebars();
   updatestatus();
@@ -764,17 +779,17 @@ void spawn(const Arg *arg) {
 }
 
 void tag(const Arg *arg) {
-  if (selected_monitor->sel && arg->ui & TAGMASK) {
-    selected_monitor->sel->tags = arg->ui & TAGMASK;
+  if (selected_monitor->selected_client && arg->ui & TAGMASK) {
+    selected_monitor->selected_client->tags = arg->ui & TAGMASK;
     focus(NULL);
     arrange(selected_monitor);
   }
 }
 
 void tagmon(const Arg *arg) {
-  if (!selected_monitor->sel || !monitors->next)
+  if (!selected_monitor->selected_client || !monitors->next)
     return;
-  sendmon(selected_monitor->sel, dirtomon(arg->i));
+  sendmon(selected_monitor->selected_client, dirtomon(arg->i));
 }
 
 void tile(Monitor *m) {
@@ -826,11 +841,11 @@ void togglebar(const Arg *arg) {
 void toggletag(const Arg *arg) {
   unsigned int newtags;
 
-  if (!selected_monitor->sel)
+  if (!selected_monitor->selected_client)
     return;
-  newtags = selected_monitor->sel->tags ^ (arg->ui & TAGMASK);
+  newtags = selected_monitor->selected_client->tags ^ (arg->ui & TAGMASK);
   if (newtags) {
-    selected_monitor->sel->tags = newtags;
+    selected_monitor->selected_client->tags = newtags;
     focus(NULL);
     arrange(selected_monitor);
   }
@@ -996,7 +1011,7 @@ void updatesizehints(Client *c) {
 void updatestatus(void) {
   if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext)))
     strcpy(stext, "pwindow_manager");
-  drawbar(selected_monitor);
+  draw_bar(selected_monitor);
 }
 
 void updatewindowtype(Client *c) {
@@ -1013,7 +1028,7 @@ void updatewmhints(Client *c) {
   XWMHints *wmh;
 
   if ((wmh = XGetWMHints(display, c->win))) {
-    if (c == selected_monitor->sel && wmh->flags & XUrgencyHint) {
+    if (c == selected_monitor->selected_client && wmh->flags & XUrgencyHint) {
       wmh->flags &= ~XUrgencyHint;
       XSetWMHints(display, c->win, wmh);
     } else
@@ -1089,7 +1104,7 @@ void movestack(const Arg *arg) {
 
   if (arg->i > 0) {
     /* find the client after selmon->sel */
-    for (c = selected_monitor->sel->next; c && (!ISVISIBLE(c) || c->isfloating);
+    for (c = selected_monitor->selected_client->next; c && (!ISVISIBLE(c) || c->isfloating);
          c = c->next)
       ;
     if (!c)
@@ -1099,7 +1114,7 @@ void movestack(const Arg *arg) {
 
   } else {
     /* find the client before selmon->sel */
-    for (i = selected_monitor->clients; i != selected_monitor->sel; i = i->next)
+    for (i = selected_monitor->clients; i != selected_monitor->selected_client; i = i->next)
       if (ISVISIBLE(i) && !i->isfloating)
         c = i;
     if (!c)
@@ -1109,30 +1124,30 @@ void movestack(const Arg *arg) {
   }
   /* find the client before selmon->sel and c */
   for (i = selected_monitor->clients; i && (!p || !pc); i = i->next) {
-    if (i->next == selected_monitor->sel)
+    if (i->next == selected_monitor->selected_client)
       p = i;
     if (i->next == c)
       pc = i;
   }
 
   /* swap c and selmon->sel selmon->clients in the selmon->clients list */
-  if (c && c != selected_monitor->sel) {
-    Client *temp = selected_monitor->sel->next == c
-                       ? selected_monitor->sel
-                       : selected_monitor->sel->next;
-    selected_monitor->sel->next =
-        c->next == selected_monitor->sel ? c : c->next;
+  if (c && c != selected_monitor->selected_client) {
+    Client *temp = selected_monitor->selected_client->next == c
+                       ? selected_monitor->selected_client
+                       : selected_monitor->selected_client->next;
+    selected_monitor->selected_client->next =
+        c->next == selected_monitor->selected_client ? c : c->next;
     c->next = temp;
 
     if (p && p != c)
       p->next = c;
-    if (pc && pc != selected_monitor->sel)
-      pc->next = selected_monitor->sel;
+    if (pc && pc != selected_monitor->selected_client)
+      pc->next = selected_monitor->selected_client;
 
-    if (selected_monitor->sel == selected_monitor->clients)
+    if (selected_monitor->selected_client == selected_monitor->clients)
       selected_monitor->clients = c;
     else if (c == selected_monitor->clients)
-      selected_monitor->clients = selected_monitor->sel;
+      selected_monitor->clients = selected_monitor->selected_client;
 
     arrange(selected_monitor);
   }

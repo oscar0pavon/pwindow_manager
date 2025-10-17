@@ -37,7 +37,7 @@ void mouse_button_press(XEvent *event) {
   /* focus monitor if necessary */
   if ((monitor = wintomon(buttons_pressed_event->window)) &&
       monitor != selected_monitor) {
-    unfocus(selected_monitor->sel, 1);
+    unfocus(selected_monitor->selected_client, 1);
     selected_monitor = monitor;
     focus(NULL);
   }
@@ -93,7 +93,7 @@ void movemouse(const Arg *arg) {
   XEvent ev;
   Time lasttime = 0;
 
-  if (!(c = selected_monitor->sel))
+  if (!(c = selected_monitor->selected_client))
     return;
   if (c->isfullscreen) /* no support moving fullscreen windows by mouse */
     return;
@@ -161,7 +161,7 @@ void resizemouse(const Arg *arg) {
   XEvent ev;
   Time lasttime = 0;
 
-  if (!(c = selected_monitor->sel))
+  if (!(c = selected_monitor->selected_client))
     return;
   if (c->isfullscreen) /* no support resizing fullscreen windows by mouse */
     return;

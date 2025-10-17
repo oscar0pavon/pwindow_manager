@@ -14,11 +14,11 @@ void restack(Monitor *m) {
   XEvent ev;
   XWindowChanges wc;
 
-  drawbar(m);
-  if (!m->sel)
+  draw_bar(m);
+  if (!m->selected_client)
     return;
-  if (m->sel->isfloating || !m->lt[m->sellt]->arrange)
-    XRaiseWindow(display, m->sel->win);
+  if (m->selected_client->isfloating || !m->lt[m->sellt]->arrange)
+    XRaiseWindow(display, m->selected_client->win);
   if (m->lt[m->sellt]->arrange) {
     wc.stack_mode = Below;
     wc.sibling = m->barwin;
@@ -40,7 +40,7 @@ void focus_monitor(const Arg *arg) {
     return;
   if ((m = dirtomon(arg->i)) == selected_monitor)
     return;
-  unfocus(selected_monitor->sel, 0);
+  unfocus(selected_monitor->selected_client, 0);
   selected_monitor = m;
   focus(NULL);
 }
