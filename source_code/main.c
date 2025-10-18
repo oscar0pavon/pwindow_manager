@@ -442,7 +442,7 @@ void setup(void) {
   /* init cursors */
   cursor[CurNormal] = drw_cur_create(drw, XC_left_ptr);
   cursor[CurResize] = drw_cur_create(drw, XC_sizing);
-  cursor[CurMove] = drw_cur_create(drw, XC_fleur);
+  cursor[CursorMove] = drw_cur_create(drw, XC_fleur);
 
   /* init appearance */
   color_scheme = ecalloc(LENGTH(colors), sizeof(Color *));

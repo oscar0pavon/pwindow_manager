@@ -20,7 +20,7 @@
 #define BETWEEN(X, A, B)        ((A) <= (X) && (X) <= (B))
 
 /* enums */
-enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
+enum { CurNormal, CurResize, CursorMove, CurLast }; /* cursor */
 enum { SchemeNormal, SchemeSelected }; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMFullscreen, NetActiveWindow, NetWMWindowType,

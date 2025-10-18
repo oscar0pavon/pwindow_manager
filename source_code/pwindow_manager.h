@@ -60,7 +60,6 @@ void mappingnotify(XEvent *e);
 void maprequest(XEvent *e);
 void monocle(Monitor *m);
 void motionnotify(XEvent *e);
-void movemouse(const Arg *arg);
 
 void movetoedge(const Arg *arg);
 void moveresize(const Arg *arg);
@@ -79,7 +78,6 @@ void pushup(const Arg *arg);
 
 void resize(Client *c, int x, int y, int w, int h, int interact);
 void resizeclient(Client *c, int x, int y, int w, int h);
-void resizemouse(const Arg *arg);
 void restack(Monitor *m);
 void run(void);
 void scan(void);

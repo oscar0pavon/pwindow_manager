@@ -9,4 +9,8 @@ extern void (*handler[LASTEvent]) (XEvent *);
 
 extern Cur *cursor[CurLast];
 
+void move_mouse(const Arg *arg);
+
+void resize_with_mouse(const Arg *arg);
+
 #endif

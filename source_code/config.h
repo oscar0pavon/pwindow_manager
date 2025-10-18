@@ -8,6 +8,7 @@
 
 
 #include "pwindow_manager.h"
+#include "input.h"
 
 static const unsigned int borderpx  = 3;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
@@ -164,9 +165,9 @@ static const Button buttons[] = {
 	{ ClkMonNum,            0,              Button2,        reset_view,     {0} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          {.v = terminal} },
-	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
+	{ ClkClientWin,         MODKEY,         Button1,        move_mouse,      {0} },
 	{ ClkClientWin,         MODKEY,					Button2,        togglefloating, {0} },
-	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
+	{ ClkClientWin,         MODKEY,         Button3,        resize_with_mouse,    {0} },
 	{ ClkTagBar,            0,              Button1,        view,           {0} },
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY|WINKEY,  Button1,        nview,          {0} },
