@@ -21,6 +21,10 @@ void showhide(Client *c);
 
 void scan_windows(void);
 
+void window_to_monitor_and_focus(const Arg *arg);
+
+void window_to_monitor(const Arg *arg);
+
 extern const char broken[];
 
 #endif

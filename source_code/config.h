@@ -9,6 +9,7 @@
 
 #include "pwindow_manager.h"
 #include "input.h"
+#include "windows.h"
 
 static const unsigned int borderpx  = 3;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
@@ -147,8 +148,8 @@ static const Key keys[] = {
 	{ALTMOD,												XK_k,		focus_monitor , {.i = -1}}, 
 	{MODKEY|ShiftMask,												XK_h,		window_to_monitor_and_focus,			 {.i = 0}}, 
 	{MODKEY|ShiftMask,												XK_l,		window_to_monitor_and_focus,			 {.i = 1}}, 
-	{ALTMOD|ShiftMask,												XK_h,		window_to_monitor,			 {.i = 0}}, 
-	{ALTMOD|ShiftMask,												XK_l,		window_to_monitor,			 {.i = 1}}, 
+	{ALTMOD|ShiftMask,												XK_h,		window_to_monitor,			 {.i = 1}}, 
+	{ALTMOD|ShiftMask,												XK_l,		window_to_monitor,			 {.i = 0}}, 
 //	{MODKEY,             XK_r,      move_godot_to_monitor,           {0} },
 	{MODKEY|ShiftMask,             XK_x,      full_screen_floating_window ,           {0} },
 	{MODKEY|ShiftMask,             XK_z,      minimal_screen_floating_window ,           {0} },

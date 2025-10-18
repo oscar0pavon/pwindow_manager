@@ -493,10 +493,21 @@ void seturgent(Client *c, int urg) {
 }
 
 void spawn(const Arg *arg) {
+
   struct sigaction sa;
 
-  if (arg->v == dmenucmd)
-    dmenumon[0] = '0' + selected_monitor->num;
+  char **value_string = (char **)arg->v;
+
+  //5 means "dmenu"
+  if (strncmp(value_string[0], dmenucmd[0], 5) == 0) {
+    // we assing the monitor number to the command array in config
+    // the resulting is
+    // value_string[0] = dmenu
+    // value_string[1] = -m
+    // value_string[2] = 0
+    value_string[2][0] = '0' + selected_monitor->num;
+  }
+
   if (fork() == 0) {
     if (display)
       close(ConnectionNumber(display));
@@ -507,8 +518,8 @@ void spawn(const Arg *arg) {
     sa.sa_handler = SIG_DFL;
     sigaction(SIGCHLD, &sa, NULL);
 
-    execvp(((char **)arg->v)[0], (char **)arg->v);
-    die("dwm: execvp '%s' failed:", ((char **)arg->v)[0]);
+    execvp(value_string[0], value_string);
+    die("pwindow_manager: execvp '%s' failed:", ((char **)arg->v)[0]);
   }
 }
 

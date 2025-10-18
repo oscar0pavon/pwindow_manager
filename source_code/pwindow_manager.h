@@ -31,8 +31,6 @@ void configure(Client *c);
 void movestack(const Arg *arg);
 
 
-void window_to_monitor_and_focus(const Arg *arg);
-void window_to_monitor(const Arg *arg);
 void focus_monitor(const Arg *arg);
 
 void move_godot_to_monitor(const Arg *arg);
