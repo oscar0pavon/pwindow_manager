@@ -158,16 +158,21 @@ void restack(Monitor *m) {
 }
 
 void focus_monitor(const Arg *arg) {
-  Monitor *m;
+  Monitor *monitor;
 
   if (!monitors->next)
     return;
-  if ((m = dirtomon(arg->i)) == selected_monitor)
+  if ((monitor = dirtomon(arg->i)) == selected_monitor)
     return;
   unfocus(selected_monitor->selected_client, 0);
-  selected_monitor = m;
+  selected_monitor = monitor;
 
   hightlight_focused_monitor(selected_monitor);
+
+  int x = selected_monitor->screen_x + (selected_monitor->screen_width/2);
+  int y = selected_monitor->screen_y + (selected_monitor->screen_height/2);
+
+  XWarpPointer(display, None, root, 0, 0, 0, 0, x, y);
 
   focus(NULL);
 }
