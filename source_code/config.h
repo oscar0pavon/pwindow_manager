@@ -41,6 +41,7 @@ static const Rule rules[] = {
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{ NULL,				NULL,       "pengine",       0,            1,           -1 },
 	{ "prufus",   NULL,       "prufus",       0,            1,           -1 },
+	{ "swordfish",   NULL,       "swordfish",       0,            1,           -1 },
 	{ "Select File - prufus",   NULL,       "Select File - prufus",       0,            1,           -1 },
 	{ "XVkbd",    NULL,       "xvkbd - Virtual Keyboard",       0,            1,           -1 },
 	{ "Godot",     "Godot_Engine",       "basket (DEBUG)",       0,            1,           0 },
@@ -144,8 +145,8 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY,                       XK_grave,  reset_view,     {0} },
 	{ MODKEY|ShiftMask,             XK_e,      quit,           {0} },
-	{ALTMOD,												XK_j,		focus_monitor ,			 {.i = +1}}, 
-	{ALTMOD,												XK_k,		focus_monitor , {.i = -1}}, 
+	{ALTMOD,												XK_h,		focus_monitor ,			 {.i = +1}}, 
+	{ALTMOD,												XK_l,		focus_monitor , {.i = -1}}, 
 	{MODKEY|ShiftMask,												XK_h,		window_to_monitor_and_focus,			 {.i = 0}}, 
 	{MODKEY|ShiftMask,												XK_l,		window_to_monitor_and_focus,			 {.i = 1}}, 
 	{ALTMOD|ShiftMask,												XK_h,		window_to_monitor,			 {.i = 1}}, 

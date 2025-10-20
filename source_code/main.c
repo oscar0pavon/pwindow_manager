@@ -823,7 +823,7 @@ int main(int argc, char *argv[]) {
   setup();
 
   //if we have opened windows arrange all
-  scan_windows();
+  //scan_windows();
 
   //focus to monitor 0 when started
   Arg arg;
