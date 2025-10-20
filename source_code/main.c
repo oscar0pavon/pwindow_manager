@@ -39,6 +39,7 @@
 
 #include <X11/Xft/Xft.h>
 
+
 #include "draw.h"
 #include "types.h"
 #include "util.h"
@@ -48,6 +49,7 @@
 #include "windows.h"
 #include "events.h"
 #include "bar.h"
+
 
 char stext[256];
 
@@ -801,11 +803,7 @@ void movestack(const Arg *arg) {
   }
 }
 
-int main(int argc, char *argv[]) {
-  if (argc == 2 && !strcmp("-v", argv[1]))
-    die("dwm");
-  else if (argc != 1)
-    die("usage: dwm [-v]");
+int main() {
 
   if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
     fputs("warning: no locale support\n", stderr);
@@ -823,7 +821,7 @@ int main(int argc, char *argv[]) {
   setup();
 
   //if we have opened windows arrange all
-  //scan_windows();
+  scan_windows();
 
   //focus to monitor 0 when started
   Arg arg;

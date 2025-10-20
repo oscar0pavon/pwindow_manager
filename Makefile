@@ -15,3 +15,5 @@ install:
 
 uninstall:
 	rm -f /usr/bin/pwindow_manager
+
+.PHONY: pwindow_manager
