@@ -157,6 +157,25 @@ void restack(Monitor *m) {
     ;
 }
 
+void set_mouse_position_to_monitor(Monitor* monitor){
+
+  hightlight_focused_monitor(monitor);
+
+  int x = monitor->screen_x + (monitor->screen_width/2);
+  int y = monitor->screen_y + (monitor->screen_height/2);
+
+  XWarpPointer(display, None, root, 0, 0, 0, 0, x, y);
+}
+
+void focus_monitor_number(int number){
+  Monitor* monitor = &monitors[number];
+
+  unfocus(selected_monitor->selected_client, 0);
+
+  set_mouse_position_to_monitor(monitor);
+
+}
+
 void focus_monitor(const Arg *arg) {
   Monitor *monitor;
 
@@ -167,12 +186,7 @@ void focus_monitor(const Arg *arg) {
   unfocus(selected_monitor->selected_client, 0);
   selected_monitor = monitor;
 
-  hightlight_focused_monitor(selected_monitor);
-
-  int x = selected_monitor->screen_x + (selected_monitor->screen_width/2);
-  int y = selected_monitor->screen_y + (selected_monitor->screen_height/2);
-
-  XWarpPointer(display, None, root, 0, 0, 0, 0, x, y);
+  set_mouse_position_to_monitor(monitor);
 
   focus(NULL);
 }

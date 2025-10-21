@@ -809,7 +809,7 @@ int main() {
     fputs("warning: no locale support\n", stderr);
 
   if (!(display = XOpenDisplay(NULL)))
-    die("dwm: cannot open display");
+    die("pwindow_manager: cannot open display");
 
   check_other_window_manager();
 
@@ -824,9 +824,7 @@ int main() {
   scan_windows();
 
   //focus to monitor 0 when started
-  Arg arg;
-  arg.i = 0;
-  focus_monitor(&arg);
+  focus_monitor_number(0);
 
   /* main event loop */
   XEvent window_manager_events;

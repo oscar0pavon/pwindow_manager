@@ -39,6 +39,7 @@ void sendmon(Client *c, Monitor *m);
 void focus_monitor(const Arg *arg);
 int updategeom(void);
 
+void focus_monitor_number(int number);
 
 
 extern Monitor *monitors, *selected_monitor;
